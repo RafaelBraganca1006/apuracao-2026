@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f1f1f2">
+<title>Apuração ao vivo · 2º turno 2026</title>
+<meta name="description" content="Mapa interativo da apuração do 2º turno da eleição presidencial de 2026, município a município, com dados oficiais do TSE.">
+<meta property="og:title" content="Apuração ao vivo · 2º turno 2026">
+<meta property="og:description" content="Lula x Flávio Bolsonaro, município a município, em tempo real.">
+<meta property="og:image" content="og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%2307090d%27/%3E%3Cpath d=%27M4 16h12v12H4z%27 fill=%27%23ff4a5c%27/%3E%3Cpath d=%27M16 4h12v12H16z%27 fill=%27%234d8dff%27/%3E%3C/svg%3E">
+<script>try{var t=new URLSearchParams(location.search).get('theme')||localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}</script>
+<link rel="preload" href="fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Petrona:ital,wght@0,300..700;1,300..700&display=swap">
+<link rel="stylesheet" href="vendor/maplibre-gl.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="map" role="img" aria-label="Mapa do Brasil colorido pelo candidato à frente em cada município"></div>
+
+<section class="panel score" id="score" aria-live="polite">
+  <div class="score-top">
+    <div class="eyebrow" id="eyebrow">Presidente · 2º turno</div>
+    <div class="badges">
+      <a class="pill homelink" href="index.html" aria-label="Voltar ao início"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5"/></svg><span>Início</span></a>
+      <button class="pill livebtn" id="liveBack" type="button" hidden><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5"/></svg><span id="liveBackTxt">Ao vivo</span></button>
+      <button class="pill score-toggle" id="scoreToggle" type="button" aria-label="Recolher ou expandir o painel" aria-expanded="true"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.5 6 4l3.5 3.5"/></svg></button>
+      <div class="pill" id="pill" data-s="waiting"><i></i><span>Aguardando</span></div>
+    </div>
+  </div>
+
+  <div class="soon" id="soon">
+    <h1 class="soon-title">Apuração <br>em <em>breve</em></h1>
+    <p class="soon-sub">Votação no domingo, <b>25/10</b>, das 8h às 17h (Brasília). Os resultados aparecem aqui conforme o TSE totaliza as urnas.</p>
+    <div class="soon-count" id="soonCount"><i></i><span></span></div>
+    <a class="btn primary soon-cta" href="pesquisas.html">Ver pesquisas eleitorais<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+  </div>
+
+  <div class="duel">
+    <div class="cand lula">
+      <img class="ph" src="img/lula.jpg" alt="" onerror="this.style.display='none'">
+      <div class="who"><span class="nm">Lula</span><small>PT</small></div>
+      <div class="pc" id="pcLbox"><span class="roll" id="pcL"></span><span class="pct">%</span></div>
+      <div class="vt"><span class="roll" id="vtL"></span><span id="vtLu">votos</span></div>
+    </div>
+    <div class="cand flavio">
+      <img class="ph" src="img/flavio.jpg" alt="" onerror="this.style.display='none'">
+      <div class="who"><span class="nm">Flávio Bolsonaro</span><small>PL</small></div>
+      <div class="pc" id="pcFbox"><span class="roll" id="pcF"></span><span class="pct">%</span></div>
+      <div class="vt"><span class="roll" id="vtF"></span><span id="vtFu">votos</span></div>
+    </div>
+  </div>
+
+  <div class="split"><b class="l" id="barL"></b><b class="f" id="barF"></b><u></u></div>
+  <div class="lead" id="lead">&nbsp;</div>
+
+  <div class="rank" id="rank" hidden>
+    <div class="rank-head">
+      <span>Demais candidatos</span>
+      <button class="link" id="rankToggle" type="button" aria-expanded="false"><span id="rankToggleTxt">Ver todos</span>
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg></button>
+    </div>
+    <div class="rank-wrap"><ul id="rankList"></ul></div>
+    <div class="rank-foot" id="rankFoot"></div>
+  </div>
+
+  <div class="prog"><i id="progBar"></i></div>
+  <div class="row meta">
+    <span id="apTxt">Seções apuradas –</span>
+    <span id="updTxt"></span>
+  </div>
+  <div class="won" id="won"></div>
+</section>
+
+<aside class="panel side" id="side">
+  <div class="side-grab" id="sideGrab">
+    <div class="side-head">
+      <div class="side-title">
+        <button class="back" id="sideBack" type="button" hidden aria-label="Voltar para a lista de estados"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5"/></svg></button>
+        <h2 id="sideTitle">Estados</h2>
+      </div>
+      <div class="seg small" id="sortSeg" role="group" aria-label="Ordenar">
+        <i class="thumb"></i>
+        <button data-sort="margin" class="on">Margem</button>
+        <button data-sort="az">A–Z</button>
+      </div>
+      <button class="x" id="sideClose" aria-label="Fechar">×</button>
+    </div>
+  </div>
+  <button class="ext-card" id="extBtn" type="button" hidden>
+    <span class="ext-ic"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15M10 2.5c2.2 2.1 3.4 4.7 3.4 7.5S12.200 15.400 10 17.500M10 2.500C7.800 4.600 6.600 7.200 6.600 10s1.200 5.400 3.400 7.500"/></svg></span>
+    <span class="ext-tx"><b>Exterior</b><small id="extSub"></small></span>
+    <span class="ext-res" id="extRes"></span>
+    <svg class="ext-go" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5 8 6 4.500 9.500"/></svg>
+  </button>
+  <ul id="ufList"></ul>
+  <div class="detail" id="detail" hidden></div>
+  <div class="evo" id="evo" hidden>
+    <div class="evo-head">
+      <h2 id="evoTitle">Linha do tempo</h2>
+      <div class="evo-actions">
+        <button class="mini" id="evoPlay" type="button" aria-label="Reproduzir a apuração" hidden><svg viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path id="evoPlayIcon" d="M3.5 2.2v7.6L9.8 6z"/></svg><span id="evoPlayTxt">Replay</span></button>
+      </div>
+    </div>
+    <div class="evo-chart" id="evoChart">
+      <svg id="spark" width="100%" height="132" role="img" aria-label="Evolução da apuração ao longo do tempo"></svg>
+      <div class="evo-tip" id="evoTip" hidden></div>
+    </div>
+    <div class="evo-foot"><span id="evoWhen"></span><span class="evo-lg"><i class="l"></i>Lula<i class="f"></i>Flávio</span></div>
+  </div>
+</aside>
+<div class="scrim" id="scrim"></div>
+
+<div class="search" id="search" role="search">
+  <svg class="mag" viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M13 13l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+  <input id="q" type="text" inputmode="search" placeholder="Buscar cidade ou estado…" autocomplete="off" autocapitalize="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="sres" aria-label="Buscar cidade ou estado">
+  <button class="clr" id="qclear" type="button" aria-label="Limpar busca" hidden>×</button>
+  <button class="theme-btn" id="themeBtn" type="button" aria-label="Alternar tema claro e escuro" title="Tema claro / escuro">
+    <svg class="sun" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="3.6"/><path d="M10 2.2v1.8M10 16v1.8M2.2 10H4M16 10h1.8M4.5 4.5l1.3 1.3M14.2 14.2l1.3 1.3M15.5 4.5l-1.3 1.3M5.8 14.2l-1.3 1.3"/></svg>
+    <svg class="moon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M16.5 11.6A6.8 6.8 0 0 1 8.4 3.5a6.8 6.8 0 1 0 8.1 8.1z"/></svg>
+  </button>
+  <ul id="sres" role="listbox" hidden></ul>
+</div>
+
+<div class="pin" id="pin" hidden>
+  <button class="x" id="pinClose" type="button" aria-label="Fechar">×</button>
+  <div id="pinBody"></div>
+</div>
+
+<section class="panel controls" id="controls">
+  <button class="grab" id="ctlGrab" type="button" aria-label="Recolher ou expandir painel"></button>
+  <div class="ctl-row">
+    <div class="seg" id="dataSeg" role="group" aria-label="Dados">
+      <i class="thumb"></i>
+      <button data-data="r2" class="on">2º turno</button>
+      <button data-data="r1">1º turno</button>
+    </div>
+    <div class="seg" id="modeSeg" role="group" aria-label="Visualização">
+      <i class="thumb"></i>
+      <button data-mode="map" class="on" aria-label="Mapa"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 3.5 5.5 2l5 1.5 4-1.5v10.5L10.5 14l-5-1.5-4 1.5z"/><path d="M5.5 2v10.5M10.5 3.5V14"/></svg><span>Mapa</span></button>
+      <button data-mode="bubbles" aria-label="Bolhas"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="5.5" cy="10" r="3.5"/><circle cx="11.5" cy="5" r="2.5"/><circle cx="12" cy="11.5" r="1.5"/></svg><span>Bolhas</span></button>
+      <button data-mode="3d" aria-label="3D"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5 14 5v6L8 14.5 2 11V5z"/><path d="M2 5l6 3.5L14 5M8 8.5v6"/></svg><span>3D</span></button>
+    </div>
+  </div>
+  <div class="ctl-extra" id="ctlExtra"><div class="ctl-extra-in">
+    <div class="legend" id="lgRamp">
+      <span id="lgL">Flávio</span>
+      <div class="ramp" id="ramp"></div>
+      <span id="lgR">Lula</span>
+    </div>
+    <div class="legend r1" id="lgR1" hidden></div>
+    <div class="grain-row" id="grainRow" hidden>
+      <div class="seg small" id="grainSeg" role="group" aria-label="Granularidade do 3D">
+        <i class="thumb"></i>
+        <button data-grain="mun" class="on">Cidades</button>
+        <button data-grain="uf">Estados</button>
+      </div>
+      <span class="h-note" id="hNote"></span>
+    </div>
+  </div></div>
+  <div class="ctl-row actions">
+    <button class="btn" id="btnStates">Estados</button>
+    <button class="btn primary" id="btnShare"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10V2M5 4.5 8 1.5l3 3M3 8v5.5h10V8"/></svg>Compartilhar</button>
+  </div>
+</section>
+
+<div class="loading" id="loading"><div class="mark"></div><span>Carregando apuração</span></div>
+<div class="tip" id="tip" hidden></div>
+
+<footer class="foot">
+  Fonte: <a href="https://resultados.tse.jus.br" target="_blank" rel="noopener">TSE</a> · malha IBGE · não oficial
+</footer>
+
+<dialog id="shareDlg">
+  <form method="dialog" class="dlg">
+    <button class="x" value="close" aria-label="Fechar">×</button>
+    <h3>Compartilhar</h3>
+    <img id="sharePrev" alt="Prévia da imagem para compartilhar">
+    <div class="dlg-actions">
+      <a class="btn primary" id="shareDl" download="apuracao-2o-turno.png">Baixar imagem</a>
+      <a class="btn" id="shareX" target="_blank" rel="noopener">Postar no X</a>
+      <button class="btn" id="shareCopy" type="button">Copiar link</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="vendor/maplibre-gl.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

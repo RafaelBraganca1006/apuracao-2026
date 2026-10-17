@@ -1,0 +1,13 @@
+# gerados pelo coletor durante a apuração: vão para o R2, não para o git
+site/data/live.json
+site/data/history.json
+site/data/snaps/
+
+# ambiente local
+.claude/
+.DS_Store
+__pycache__/
+*.pyc
+node_modules/
+.env
+.wrangler/

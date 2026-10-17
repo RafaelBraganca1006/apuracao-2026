@@ -1,0 +1,29 @@
+# Cloudflare Pages / Netlify: cache curto nos dados ao vivo, longo no resto
+/data/live.json
+  Cache-Control: public, max-age=15, s-maxage=15
+/data/history.json
+  Cache-Control: public, max-age=15, s-maxage=15
+/data/*.geojson
+  Cache-Control: public, max-age=86400
+/data/turno1.json
+  Cache-Control: public, max-age=86400
+/vendor/*
+  Cache-Control: public, max-age=31536000, immutable
+/img/*
+  Cache-Control: public, max-age=86400
+/data/snaps1/*
+  Cache-Control: public, max-age=86400
+/data/history1.json
+  Cache-Control: public, max-age=86400
+/data/brasil-pontos.json
+  Cache-Control: public, max-age=86400
+/data/pesquisas.json
+  Cache-Control: public, max-age=600
+/data/centroides.json
+  Cache-Control: public, max-age=86400
+/*.js
+  Cache-Control: public, max-age=300
+/*.css
+  Cache-Control: public, max-age=300
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable

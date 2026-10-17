@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f1f1f2">
+<title>Pesquisas do 2º turno · Lula × Flávio Bolsonaro</title>
+<meta name="description" content="As pesquisas de 2º turno, instituto por instituto.">
+<meta property="og:title" content="Pesquisas do 2º turno · Lula × Flávio Bolsonaro">
+<meta property="og:image" content="og.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%2307090d%27/%3E%3Cpath d=%27M4 16h12v12H4z%27 fill=%27%23ff4a5c%27/%3E%3Cpath d=%27M16 4h12v12H16z%27 fill=%27%234d8dff%27/%3E%3C/svg%3E">
+<script>try{var t=new URLSearchParams(location.search).get('theme')||localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Petrona:ital,wght@0,300..700;1,300..700&display=swap">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="pages.css">
+</head>
+<body class="page ready poll">
+<header class="pq-top">
+  <a class="back" href="index.html" aria-label="Voltar ao início"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5"/></svg><span>Início</span></a>
+  <button class="theme-btn" id="themeBtn" type="button" aria-label="Alternar tema claro e escuro">
+    <svg class="sun" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="3.6"/><path d="M10 2.2v1.8M10 16v1.8M2.2 10H4M16 10h1.8M4.5 4.5l1.3 1.3M14.2 14.2l1.3 1.3M15.5 4.5l-1.3 1.3M5.8 14.2l-1.3 1.3"/></svg>
+    <svg class="moon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M16.5 11.6A6.8 6.8 0 0 1 8.4 3.5a6.8 6.8 0 1 0 8.1 8.1z"/></svg>
+  </button>
+</header>
+
+<main class="pq">
+  <section class="pq-hero">
+    <p class="eyebrow">Eleição presidencial 2026</p>
+    <h1>Pesquisas do 2º turno</h1>
+    <p class="pq-lead">Lula e Flávio Bolsonaro, instituto por instituto.</p>
+  </section>
+
+  <section class="pq-avg" id="avg" aria-live="polite"></section>
+
+  <section class="pq-list">
+    <div class="pq-bar">
+      <div class="seg range" id="range" role="group" aria-label="Período">
+        <button data-r="2026" class="on">Este ano</button>
+        <button data-r="post">Depois do 1º turno</button>
+      </div>
+      <div class="chips" id="chips" aria-label="Filtrar por instituto"></div>
+    </div>
+    <div class="pq-head"><h2 id="listTitle">Pesquisas recentes</h2><p id="listSub">A mais recente de cada instituto</p></div>
+    <ul class="list" id="list"><li class="none">Carregando pesquisas…</li></ul>
+    <p class="note" id="note"></p>
+  </section>
+</main>
+<script src="pesquisas.js"></script>
+</body>
+</html>

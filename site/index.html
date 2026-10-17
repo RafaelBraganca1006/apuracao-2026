@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f1f1f2">
+<title>Eleição 2026 · Lula × Flávio Bolsonaro</title>
+<meta name="description" content="Pesquisas do 2º turno e a apuração município a município, com dados oficiais do TSE.">
+<meta property="og:title" content="Eleição 2026 · Lula × Flávio Bolsonaro">
+<meta property="og:description" content="Pesquisas do 2º turno e a apuração município a município, em tempo real.">
+<meta property="og:image" content="og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%2307090d%27/%3E%3Cpath d=%27M4 16h12v12H4z%27 fill=%27%23ff4a5c%27/%3E%3Cpath d=%27M16 4h12v12H16z%27 fill=%27%234d8dff%27/%3E%3C/svg%3E">
+<script>try{var t=new URLSearchParams(location.search).get('theme')||localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="preload" href="fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Petrona:ital,wght@0,300..700;1,300..700&display=swap">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="pages.css">
+</head>
+<body class="page ready">
+<main class="home">
+  <canvas class="bg-map" id="bgMap" aria-hidden="true"></canvas>
+    <header class="topbar">
+    <a class="brand" href="index.html"><i aria-hidden="true"></i>Eleição 2026</a>
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Alternar tema claro e escuro">
+      <svg class="sun" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="3.6"/><path d="M10 2.2v1.8M10 16v1.8M2.2 10H4M16 10h1.8M4.5 4.5l1.3 1.3M14.2 14.2l1.3 1.3M15.5 4.5l-1.3 1.3M5.8 14.2l-1.3 1.3"/></svg>
+      <svg class="moon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M16.5 11.6A6.8 6.8 0 0 1 8.4 3.5a6.8 6.8 0 1 0 8.1 8.1z"/></svg>
+    </button>
+  </header>
+
+  <section class="hero">
+    <figure class="face l"><canvas class="dither" data-src="img/lula.jpg" role="img" aria-label="Retrato de Lula"></canvas></figure>
+    <div class="hero-main">
+      <div class="soon-count"><i></i><span>2º turno · domingo, 25/10</span></div>
+      <h1 class="soon-title" id="title">Faltam <em>para o 2º turno</em></h1>
+      <div class="countdown" id="cd" role="timer" aria-live="off">
+        <div class="u panel"><b id="cdD">--</b><small>dias</small></div>
+        <div class="u panel"><b id="cdH">--</b><small>horas</small></div>
+        <div class="u panel"><b id="cdM">--</b><small>min</small></div>
+        <div class="u panel"><b id="cdS">--</b><small>seg</small></div>
+      </div>
+      <nav class="ctas" aria-label="Principais seções">
+        <a class="btn primary" href="pesquisas.html">Pesquisas eleitorais<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+        <a class="btn" href="apuracao.html?data=r1">Apuração do 1º turno<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+            <span class="btn locked" role="link" aria-disabled="true" title="Disponível quando a apuração começar">Apuração do 2º turno<span class="soonbadge"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.2" y="7" width="9.6" height="6.6" rx="1.6"/><path d="M5.2 7V5.2a2.8 2.8 0 0 1 5.6 0V7"/></svg>Em breve</span></span>
+      </nav>
+    </div>
+    <figure class="face f"><canvas class="dither" data-src="img/flavio.jpg" role="img" aria-label="Retrato de Flávio Bolsonaro"></canvas></figure>
+  </section>
+
+  <footer class="home-foot">Fonte: <a href="https://resultados.tse.jus.br" target="_blank" rel="noopener">TSE</a> · malha IBGE · não oficial</footer>
+</main>
+<script src="bg.js"></script>
+<script src="dither.js"></script>
+<script>
+(function () {
+  var b = document.getElementById('themeBtn');
+  b.addEventListener('click', function () {
+    var n = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = n;
+    try { localStorage.setItem('theme', n); } catch (e) {}
+  });
+  var ids = ['D', 'H', 'M', 'S'].map(function (k) { return document.getElementById('cd' + k); }), title = document.getElementById('title'), cd = document.getElementById('cd');
+  var start = Date.UTC(2026, 9, 25, 11, 0, 0), end = Date.UTC(2026, 9, 25, 20, 0, 0);
+  function p(n) { return n < 10 ? '0' + n : String(n); }
+  function tick() {
+    var now = Date.now();
+    if (now >= start) {
+      cd.style.display = 'none'; 
+      title.textContent = now < end ? 'Votação em andamento. A apuração começa às 17h.' : 'Votação encerrada. Acompanhe a apuração.';
+      return;
+    }
+    var s = Math.floor((start - now) / 1000);
+    var v = [Math.floor(s / 86400), Math.floor((s % 86400) / 3600), Math.floor((s % 3600) / 60), s % 60];
+    ids.forEach(function (e, i) { e.textContent = p(v[i]); });
+  }
+  tick(); setInterval(tick, 1000);
+})();
+</script>
+</body>
+</html>

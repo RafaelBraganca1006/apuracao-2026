@@ -653,3 +653,5 @@ body.og .soon-count { display: none; }
   .rank-wrap { touch-action: pan-y; }
   .controls input { touch-action: manipulation; }
 }
+
+@media (max-width: 900px) { .score.is-soon .score-grab { display: none; } }

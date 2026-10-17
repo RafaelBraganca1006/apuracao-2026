@@ -1117,16 +1117,25 @@ const renderSoon = updateCountdown;
 function syncPollMode() {
   const on = pollMode();
   $('#score').classList.toggle('is-soon', on);
+  applyScoreMin();
   if (on) updateScoreVar();
 }
 
 
 function updateScoreVar() { document.documentElement.style.setProperty('--score-b', Math.round($('#score').getBoundingClientRect().bottom) + 'px'); }
 new ResizeObserver(updateScoreVar).observe($('#score'));
-{ // celular: o placar tem versão resumida (só os dois percentuais), retrátil arrastando em qualquer ponto dele
+// celular: o placar tem versão resumida (só os dois percentuais), retrátil arrastando em qualquer ponto dele.
+// Em "Apuração em breve" (is-soon) ele fica sempre aberto e sem alça.
+let scoreMin = matchMedia('(max-width: 900px)').matches;
+function applyScoreMin() {
+  const sc = $('#score'), soon = sc.classList.contains('is-soon');
+  sc.classList.toggle('min', scoreMin && !soon);
+  $('#scoreGrab').setAttribute('aria-expanded', String(!(scoreMin && !soon)));
+}
+{
   const sc = $('#score'), g = $('#scoreGrab');
-  const set = (min) => { sc.classList.toggle('min', min); g.setAttribute('aria-expanded', String(!min)); };
-  set(matchMedia('(max-width: 900px)').matches);
+  const set = (min) => { if (sc.classList.contains('is-soon')) return; scoreMin = min; applyScoreMin(); };
+  applyScoreMin();
   swipePanel(sc, () => set(true), () => set(false));                     // painel no topo: arrastar para cima recolhe, para baixo expande
   g.addEventListener('keydown', (e) => { if (e.key === 'ArrowUp') set(true); else if (e.key === 'ArrowDown') set(false); });
 }

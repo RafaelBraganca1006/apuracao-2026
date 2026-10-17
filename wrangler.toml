@@ -1,0 +1,8 @@
+# Cloudflare Pages: site estático em site/ + funções em functions/ + Analytics Engine
+name = "apuracao-2026"
+pages_build_output_dir = "site"
+compatibility_date = "2026-01-01"
+
+[[analytics_engine_datasets]]
+binding = "AE"
+dataset = "apuracao"

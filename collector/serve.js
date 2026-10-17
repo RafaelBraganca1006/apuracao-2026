@@ -3,6 +3,10 @@ const http = require('http'), fs = require('fs'), path = require('path');
 const ROOT = path.resolve(__dirname, '..', 'site');
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.geojson': 'application/json', '.jpg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml' };
 http.createServer((req, res) => {
+  if (req.method === 'POST' && req.url.startsWith('/api/e')) {            // simula a coleta do analytics (em produção é functions/api/e.js)
+    let b = ''; req.on('data', (c) => (b += c)); req.on('end', () => { if (process.env.LOG_BEACON) console.log('beacon', b); res.writeHead(204).end(); });
+    return;
+  }
   let p = decodeURIComponent(req.url.split('?')[0]);
   if (p.endsWith('/')) p += 'index.html';
   const f = path.join(ROOT, p);

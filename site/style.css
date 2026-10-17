@@ -438,7 +438,6 @@ body.og .panel, body.og .search { animation: none !important; opacity: 1 !import
   .scrim { position: fixed; inset: 0; z-index: 24; background: var(--scrim); opacity: 0; pointer-events: none; transition: opacity .4s; }
   .scrim.on { opacity: 1; pointer-events: auto; }
   .foot { display: none; }
-  .evo svg { height: 56px; }
 
   /* card da cidade compacto (4 primeiros), expande com um toque */
   .pin { max-height: 62vh; }
@@ -608,19 +607,44 @@ body.og .soon-count { display: none; }
   .pin .cl:nth-of-type(n+5), .tip .cl:nth-of-type(n+5), .pin .cmp, .tip .cmp { display: none; }
   .pin .sub, .tip .sub { margin-bottom: 6px; }
 
-  /* painel de controles compacto: busca + ícones na primeira linha, seletores na segunda, legenda só quando expandido */
+  /* painel de controles: recolhido = busca + ícones e seletores sem texto; expandido = nomes, legenda e linha do tempo */
   .controls { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; padding: 4px 10px 10px; }
   .controls > .grab { grid-column: 1 / -1; }
   .controls > .search { grid-column: 1; grid-row: 2; min-width: 0; }
   .controls > .actions { display: contents; }
   .controls .actions .btn { grid-row: 2; width: 42px; height: 42px; padding: 0; border-radius: var(--r-md); }
-  .controls .actions .btn span { display: none; }
   .controls .actions .btn svg { width: 18px; height: 18px; }
+  .controls.collapsed .actions .btn span, .controls.collapsed #modeSeg button span { display: none; }
   .controls > .ctl-row:not(.actions) { grid-column: 1 / -1; grid-row: 3; flex-wrap: nowrap; gap: 8px; }
   .controls > .ctl-row:not(.actions) .seg button { padding: 6px 9px; }
-  .controls #modeSeg button span { display: none; }
   .controls > .ctl-extra { grid-column: 1 / -1; grid-row: 4; }
   .controls .search input { height: 42px; }
+  .controls:not(.collapsed) { grid-template-columns: 1fr 1fr; }
+  .controls:not(.collapsed) > .search { grid-column: 1 / -1; }
+  .controls:not(.collapsed) .actions .btn { grid-row: 6; width: auto; height: 38px; padding: 0 14px; font-size: 13px; }
+  .controls:not(.collapsed) > .ctl-row:not(.actions) { flex-wrap: wrap; }
+  .controls > .evo { grid-column: 1 / -1; grid-row: 5; padding: 8px 2px 0; border-top: 1px solid var(--line); }
+  .controls.collapsed > .evo { display: none; }
+  .controls .evo-head { margin-bottom: 0; }
+  .controls .evo #spark { height: 68px; }
+  .controls .evo .mini { height: 26px; padding: 0 10px 0 8px; }
+  .controls .evo-head { min-height: 26px; }
+  .controls .lg-note, .controls .legend.r1 .chip { display: none; }
+  .controls .evo-foot { margin-top: 0; }
+  .controls .evo-lg { display: none; }
+
+  /* placar recolhido: bem menor (fotos, números e selos reduzidos) */
+  .score.min { padding: 8px 12px 6px; }
+  .score.min .score-top { margin-bottom: 4px; gap: 6px; }
+  .score.min .pill { font-size: 10px; padding: 3px 9px 3px 8px; }
+  .score.min .ph { width: 24px; height: 24px; border-width: 1.5px; }
+  .score.min .cand { grid-template-columns: 24px 1fr; column-gap: 8px; }
+  .score.min .cand.flavio { grid-template-columns: 1fr 24px; }
+  .score.min .who .nm { font-size: 12px; }
+  .score.min .who small { display: none; }
+  .score.min .pc { font-size: calc(26px * var(--num-k)); margin-top: 2px; }
+  .score.min .split { margin-top: 6px; height: 4px; }
+  .score.min .score-grab { margin: 0 0 -14px; }
 }
 
 @media (max-width: 900px) {

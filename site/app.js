@@ -101,7 +101,7 @@ const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
 const isMobile = () => window.matchMedia('(max-width: 900px)').matches;
 // Arrastar para cima/baixo em QUALQUER ponto do painel (celular). Age assim que o dedo passa de 14 px na vertical;
 // o clique que o gesto geraria é engolido. Campos de texto e listas roláveis ficam de fora.
-function swipePanel(el, onUp, onDown, ignore = 'input, textarea, select, .rank-wrap, #sres') {
+function swipePanel(el, onUp, onDown, ignore = 'input, textarea, select, .rank-wrap, #sres, .evo-chart') {
   let x0 = 0, y0 = 0, active = false, done = false;
   el.addEventListener('pointerdown', (e) => {
     if (!isMobile() || e.pointerType === 'mouse' && e.button !== 0 || e.target.closest(ignore)) return;
@@ -302,7 +302,7 @@ async function initMap() {
     'line-width': ['interpolate', ['linear'], ['zoom'], 3, 0.5, 8, 1.4],
   } });
   map.addLayer({ id: 'hover', type: 'line', source: 'mun', paint: {
-    'line-color': T.ink, 'line-width': ['case', ['boolean', ['feature-state', 'h'], false], 1.8, 0],
+    'line-color': T.ink, 'line-width': ['case', ['boolean', ['feature-state', 'h'], false], isMobile() ? 2.6 : 1.8, 0],
   } });
   map.addLayer({ id: 'sel', type: 'line', source: 'mun', paint: {
     'line-color': T.ink, 'line-width': ['case', ['boolean', ['feature-state', 's'], false], 2.6, 0],
@@ -426,7 +426,7 @@ function bindMapEvents() {
     const f = map.queryRenderedFeatures(e.point, { layers })[0];
     if (!f) { hideTip(); return; }
     if (f.layer.id === 'uf3d') { openState(UF_BY_COD[f.id], { zoom: false }); return; }
-    if (isMobile()) showTip(String(f.id), e.originalEvent.clientX, e.originalEvent.clientY);
+    if (isMobile()) { showTip(String(f.id), e.originalEvent.clientX, e.originalEvent.clientY); hoverTo({ source: 'mun', id: f.id }); }   // toque: cartão + contorno
     else { const r = S.r1.rows[f.id]; if (r) pick({ kind: 'mun', id: String(f.id), nome: r.nome, uf: r.uf }, { fly: false }); }
   });
   map.on('movestart', () => { if (!isMobile()) hideTip(); });
@@ -448,7 +448,7 @@ function tipR1(r) {
   return `<h4>${r.nome}</h4><div class="sub">${UF_NOME[r.uf] || r.uf} · 1º turno · ${fmtInt(r.val)} votos válidos</div>${rows}
     <div class="cmp">${foot}</div>`;
 }
-function hideTip() { tip.hidden = true; }
+function hideTip() { tip.hidden = true; if (isMobile()) window.trackerHover?.(null); }   // celular: o contorno do município some junto com o cartão
 
 // html do card de um município, conforme a visão atual
 function tipHtml(id) {
@@ -951,14 +951,14 @@ function renderEvo() {
   if (pts.length < 2) { box.hidden = true; return; }
   box.hidden = false;
   $('#evoTitle').textContent = 'Linha do tempo';
-  const svg = $('#spark'), W = Math.max(svg.clientWidth || 280, 200), H = 132, m = { l: 32, r: 8, t: 8, b: 20 };
+  const svg = $('#spark'), W = Math.max(svg.clientWidth || 280, 200), H = Math.max(svg.clientHeight || 132, 52), m = { l: 32, r: 8, t: H < 90 ? 6 : 8, b: H < 90 ? 16 : 20 };
   const t0 = pts[0][0], t1 = Math.max(pts[pts.length - 1][0], t0 + 1);
   const sx = (t) => m.l + ((t - t0) / (t1 - t0)) * (W - m.l - m.r);
   // 1º turno: % sobre todos os votos válidos (como no painel do TSE); 2º turno: % entre os dois candidatos
   const sa = pts.map((p) => p[1] / (t1v ? p[5] : p[1] + p[2])), sb = pts.map((p) => p[2] / (t1v ? p[5] : p[1] + p[2]));
   const vals = [...sa, ...sb, ...(t1v ? [] : [0.5])];
   let lo = Math.min(...vals), hi = Math.max(...vals);
-  const step = [0.01, 0.02, 0.05, 0.1].find((s) => (hi - lo + 0.01) / s <= 4) || 0.1;
+  const step = [0.01, 0.02, 0.05, 0.1].find((s) => (hi - lo + 0.01) / s <= (H < 90 ? 2 : 4)) || 0.1;   // gráfico baixo (celular): menos linhas de grade
   lo = Math.floor((lo - 0.002) / step) * step; hi = Math.ceil((hi + 0.002) / step) * step;
   const sy = (v) => m.t + (1 - (v - lo) / (hi - lo)) * (H - m.t - m.b);
   const path = (arr) => arr.map((v, i) => `${i ? 'L' : 'M'}${sx(pts[i][0]).toFixed(1)},${sy(v).toFixed(1)}`).join('');
@@ -1413,8 +1413,15 @@ function placeSearch() {
   if (s.parentElement !== host) { if (host === document.body) host.prepend(s); else host.insertBefore(s, $('#ctlGrab').nextSibling); s.classList.toggle('inpanel', host !== document.body); }
   document.documentElement.style.setProperty('--ctl-h', $('#controls').offsetHeight + 'px');
 }
-placeSearch();
-addEventListener('resize', placeSearch);
+function placeEvo() {                                  // celular: a linha do tempo vive no painel de controles (aparece só expandido)
+  const e = $('#evo'), host = isMobile() ? $('#controls') : $('#side');
+  if (e.parentElement === host) return;
+  if (host.id === 'controls') host.insertBefore(e, host.querySelector('.ctl-row.actions')); else host.appendChild(e);
+  if (S.ready) renderEvo();
+}
+placeSearch(); placeEvo();
+addEventListener('resize', () => { placeSearch(); placeEvo(); });
+{ let raf = 0; new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => { if (S.ready) renderEvo(); }); }).observe($('#evoChart')); }
 new ResizeObserver(placeSearch).observe($('#controls'));
 
 /* ================= compartilhar ================= */

@@ -126,6 +126,7 @@ async function load() {
     $('#login').hidden = true; $('#dash').hidden = false; err.textContent = '';
     $('#anSub').textContent = DEMO ? 'Dados de demonstração (?demo). Nada disso é real.' : `Atualizado às ${new Date().toLocaleTimeString('pt-BR')} · últimas ${hours >= 48 ? Math.round(hours / 24) + ' dias' : hours + ' horas'}.`;
     render(data);
+    if (data.errors?.length) { err.textContent = `Algumas seções não carregaram: ${data.errors.join(' | ')}`; }
   } catch (e) { $('#login').hidden = DEMO; err.textContent = `Não foi possível carregar (${e.message}).`; }
 }
 $('#login').addEventListener('submit', (e) => { e.preventDefault(); localStorage.setItem('stats_token', $('#tok').value.trim()); load(); });

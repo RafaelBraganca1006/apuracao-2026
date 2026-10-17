@@ -1,7 +1,7 @@
 // Resumo do analytics para o painel (/analytics.html). Protegido por token (STATS_TOKEN).
 // Lê o Analytics Engine pela API SQL da Cloudflare (precisa de CF_ACCOUNT_ID e CF_API_TOKEN com "Account Analytics: Read").
 const T = 'apuracao';
-const BEAT = "SUM(IF(blob1 = 'beat', double1 * _sample_interval, 0))";
+const BEAT = "SUM(IF(blob1 = 'beat', double1 * _sample_interval, 0.0))";   // 0.0: o IF() exige o mesmo tipo (Double) nos dois ramos
 
 async function sql(env, q) {
   const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/analytics_engine/sql`, {
@@ -38,9 +38,11 @@ export async function onRequestGet({ request, env }) {
   if (tok.length !== env.STATS_TOKEN.length || [...tok].reduce((a, c, i) => a | (c.charCodeAt(0) ^ env.STATS_TOKEN.charCodeAt(i)), 0) !== 0) return new Response(JSON.stringify({ error: 'token inválido' }), { status: 401, headers: head });
   const hours = Math.min(720, Math.max(1, parseInt(url.searchParams.get('hours'), 10) || 48));
   try {
-    const q = queries(hours), keys = Object.keys(q), res = await Promise.all(keys.map((k) => sql(env, q[k])));
-    const out = Object.fromEntries(keys.map((k, i) => [k, res[i]]));
-    return new Response(JSON.stringify({ hours, generated: new Date().toISOString(), ...out }), { headers: head });
+    // cada consulta é independente: se uma falhar, as outras seções continuam e o erro vai em `errors`
+    const q = queries(hours), keys = Object.keys(q), res = await Promise.allSettled(keys.map((k) => sql(env, q[k])));
+    const out = {}, errors = [];
+    keys.forEach((k, i) => { if (res[i].status === 'fulfilled') out[k] = res[i].value; else { out[k] = []; errors.push(`${k}: ${String(res[i].reason?.message || res[i].reason).slice(0, 220)}`); } });
+    return new Response(JSON.stringify({ hours, generated: new Date().toISOString(), errors, ...out }), { headers: head });
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e.message || e) }), { status: 502, headers: head });
   }

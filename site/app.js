@@ -878,7 +878,7 @@ function closeState() { S.uf = null; syncSide(); renderStates(); refit(true); }
 function renderDetail() {
   const sg = S.uf, box = $('#detail');
   if (!sg) return;
-  const d = S.view.data, r1v = d === 'r1', ext = sg === 'ZZ';
+  const d = mapView(), r1v = d === 'r1', ext = sg === 'ZZ';   // antes da apuração do 2º turno o detalhe mostra o 1º turno (igual ao mapa)
   const u1 = (r1v ? S.agg1 : S.agg1f).U[sg], u2 = S.agg2?.U[sg], u = r1v ? u1 : u2;
   const rows1 = (r1v ? S.r1 : S.r1f).rows, rows2 = S.r2?.rows;
   const ids = S.byUf[sg] || [];

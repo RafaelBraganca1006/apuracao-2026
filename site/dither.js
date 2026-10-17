@@ -132,7 +132,7 @@ const all = [...document.querySelectorAll('canvas.dither')].map((c) => new Dithe
 const T0 = performance.now(), REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 if (!REDUCED) {
   const ptr = { x: -9999, y: -9999 };
-  addEventListener('pointermove', (e) => { ptr.x = e.clientX; ptr.y = e.clientY; });
+  addEventListener('pointermove', (e) => { if (e.pointerType !== 'mouse') return; ptr.x = e.clientX; ptr.y = e.clientY; });   // só mouse: no toque não distorce
   addEventListener('pointerleave', () => { ptr.x = ptr.y = -9999; });
   const loop = () => {
     for (const d of all) {

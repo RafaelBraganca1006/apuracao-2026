@@ -68,7 +68,7 @@ function frame(now) {
 }
 
 const start = () => { cancelAnimationFrame(raf); readColors(); raf = requestAnimationFrame(frame); };
-addEventListener('pointermove', (e) => { const r = cv.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; mouse.on = true; });
+addEventListener('pointermove', (e) => { if (e.pointerType !== 'mouse') return; const r = cv.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; mouse.on = true; });
 addEventListener('pointerleave', () => { mouse.on = false; });
 document.addEventListener('visibilitychange', () => { if (document.hidden) cancelAnimationFrame(raf); else start(); });
 new ResizeObserver(() => { layout(); if (REDUCED) start(); }).observe(cv);

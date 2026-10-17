@@ -3,6 +3,7 @@
 const $ = (s) => document.querySelector(s);
 const R1_DATE = '2026-10-04';
 const S = { polls: [], range: '2026', inst: new Set() };
+const capture = (event, properties) => window.posthog?.capture(event, properties);
 
 const fmtDM = (iso) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
 const fmtDMY = (iso) => `${fmtDM(iso)}/${iso.slice(2, 4)}`;
@@ -69,16 +70,23 @@ function renderList() {
 }
 const renderAll = () => { renderChips(); renderList(); };
 
-$('#list').addEventListener('click', (e) => { const li = e.target.closest('li[data-url]'); if (li?.dataset.url) window.open(li.dataset.url, '_blank', 'noopener'); });
+$('#list').addEventListener('click', (e) => {
+  const li = e.target.closest('li[data-url]');
+  if (!li?.dataset.url) return;
+  capture('poll_article_opened');
+  window.open(li.dataset.url, '_blank', 'noopener');
+});
 $('#chips').addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b) return;
   const n = b.dataset.i;
   if (!n) S.inst.clear(); else if (S.inst.has(n)) S.inst.delete(n); else S.inst.add(n);
+  capture('poll_institute_filter_changed', { filter_state: n ? (S.inst.has(n) ? 'selected' : 'cleared') : 'all' });
   renderAll();
 });
 $('#range').addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b) return;
   S.range = b.dataset.r;
+  capture('poll_period_filter_changed', { period: S.range });
   document.querySelectorAll('#range button').forEach((x) => x.classList.toggle('on', x === b));
   renderAll();
 });

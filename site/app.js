@@ -10,6 +10,7 @@ const START_GRAIN = params.get('grain') === 'uf' ? 'uf' : 'mun';
 const START_MODE = ['map', 'bubbles', '3d'].includes(params.get('mode')) ? params.get('mode') : 'map';
 const POLL_MS = 30000;
 const LIVE_BASE = window.TRACKER_LIVE_BASE || 'data/';
+const captureEvent = (event, properties) => window.posthog?.capture(event, properties);
 const ZSTOPS = [[3, 2.6], [5, 0.95], [7, 0.25], [9, 0.06], [11, 0.016]];   // fator da altura por zoom (os blocos são em metros)
 const LIFT = 1.12, RIM_T = 9000;     // hover: bloco sobe 12%; espessura do contorno (m, antes da escala de zoom)
 const EMPTY_FC = { type: 'FeatureCollection', features: [] };
@@ -847,6 +848,7 @@ function syncSide() {
   updateThumbs();
 }
 function openState(sg, { zoom = true, openSheet = true } = {}) {
+  captureEvent('results_location_opened', { location_type: sg === 'ZZ' ? 'exterior' : 'state' });
   S.uf = sg;
   if (zoom && ufBounds[sg]) fitTo(ufBounds[sg], { padding: { ...padding(), left: isMobile() ? 20 : padding().left }, duration: 900 });
   syncSide(); renderStates(); renderDetail();
@@ -1063,6 +1065,7 @@ async function playReplay() {
   const times = which === 1 ? S.snap1Ts.slice() : S.snapTs.slice();
   if (times.length < 2) return;
   const token = (playing = { stop: false });
+  captureEvent('results_replay_started', { election_round: which });
   setPlayUi(true);
   const cur = which === 1 ? S.at1 : S.at;
   let i = cur != null ? Math.max(0, times.findIndex((t) => t >= cur)) : 0;
@@ -1143,13 +1146,19 @@ async function pull() {
 document.querySelectorAll('#dataSeg button').forEach((b) => b.addEventListener('click', async () => {
   stopPlay();
   if (b.dataset.data !== 'r1' && S.at1 != null) await setTime1(null);     // as outras visões comparam com o 1º turno final
-  S.view.data = b.dataset.data; S.userPicked = true; renderAll();
+  S.view.data = b.dataset.data;
+  captureEvent('results_data_view_changed', { election_round: S.view.data });
+  S.userPicked = true; renderAll();
 }));
 document.querySelectorAll('#modeSeg button').forEach((b) => b.addEventListener('click', () => {
-  S.view.mode = b.dataset.mode; setView();
+  S.view.mode = b.dataset.mode;
+  captureEvent('results_visualization_changed', { visualization: S.view.mode });
+  setView();
 }));
 document.querySelectorAll('#grainSeg button').forEach((b) => b.addEventListener('click', () => {
-  S.view.grain = b.dataset.grain; hideTip(); updateRim(null); setView();
+  S.view.grain = b.dataset.grain;
+  captureEvent('results_granularity_changed', { granularity: S.view.grain });
+  hideTip(); updateRim(null); setView();
 }));
 document.querySelectorAll('#sortSeg button').forEach((b) => b.addEventListener('click', () => {
   S.sort = b.dataset.sort;
@@ -1254,7 +1263,7 @@ function setSheet(state, animate = true) {
     try { localStorage.setItem('ctlCollapsed', collapsed ? '1' : '0'); } catch (e) { /* sem storage */ }
     setTimeout(() => { if (!S.uf && !S.sel && isMobile()) refit(true); }, 520);
   };
-  try { if (localStorage.getItem('ctlCollapsed') === '1') ctl.classList.add('collapsed'); } catch (e) { /* sem storage */ }
+  try { const sv = localStorage.getItem('ctlCollapsed'); if (sv === '1' || (sv == null && matchMedia('(max-width: 900px)').matches)) ctl.classList.add('collapsed'); } catch (e) { /* sem storage */ }   // celular: legenda recolhida por padrão
   g.addEventListener('pointerdown', (e) => { y0 = e.clientY; try { g.setPointerCapture(e.pointerId); } catch (err) { /* ponteiro sintético */ } });
   g.addEventListener('pointerup', (e) => {
     if (y0 == null) return;
@@ -1337,6 +1346,7 @@ function pick(e, { fly = true } = {}) {
     return;
   }
   if (S.uf && S.uf !== e.uf) { S.uf = null; syncSide(); }
+  captureEvent('results_location_opened', { location_type: e.kind === 'ext' ? 'exterior' : 'municipality' });
   S.sel = e.id; qEl.value = e.kind === 'ext' ? `${e.nome} · Exterior` : `${e.nome} · ${e.uf}`; $('#qclear').hidden = false;
   if (e.kind === 'mun') {
     map.setFeatureState({ source: 'mun', id: +e.id }, { s: true });
@@ -1460,13 +1470,18 @@ $('#btnShare').addEventListener('click', () => {
     const link = location.origin + location.pathname;
     $('#shareX').href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(txt)}&url=${encodeURIComponent(link)}`;
     $('#shareDlg').showModal();
+    captureEvent('results_share_dialog_opened', { election_round: useR1 ? 'r1' : 'r2' });
   };
   map.once('idle', capture);
   setTimeout(capture, 1500);
   map.triggerRepaint();
 });
 $('#shareCopy').addEventListener('click', async (e) => {
-  try { await navigator.clipboard.writeText(location.origin + location.pathname); e.target.textContent = 'Link copiado ✓'; }
+  try {
+    await navigator.clipboard.writeText(location.origin + location.pathname);
+    captureEvent('results_share_link_copied');
+    e.target.textContent = 'Link copiado ✓';
+  }
   catch (err) { e.target.textContent = 'Copie da barra de endereço'; }
   setTimeout(() => (e.target.textContent = 'Copiar link'), 2000);
 });

@@ -162,8 +162,8 @@
     </div>
   </div></div>
   <div class="ctl-row actions">
-    <button class="btn" id="btnStates">Estados</button>
-    <button class="btn primary" id="btnShare" data-ev="compartilhar"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10V2M5 4.5 8 1.5l3 3M3 8v5.5h10V8"/></svg>Compartilhar</button>
+    <button class="btn" id="btnStates" aria-label="Lista de estados"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h11M2.5 8h11M2.5 12h7"/></svg><span>Estados</span></button>
+    <button class="btn primary" id="btnShare" data-ev="compartilhar" aria-label="Compartilhar"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10V2M5 4.5 8 1.5l3 3M3 8v5.5h10V8"/></svg><span>Compartilhar</span></button>
   </div>
 </section>
 
@@ -188,6 +188,8 @@
 </dialog>
 
 <script src="vendor/maplibre-gl.js"></script>
+<script src="posthog-config.js"></script>
+<script src="posthog.js"></script>
 <script src="config.js"></script>
 <script src="app.js"></script>
 <script src="beacon.js" defer></script>

@@ -29,7 +29,7 @@
   <section class="pq-hero">
     <p class="eyebrow">Painel privado</p>
     <h1 id="anTitle">A noite em números</h1>
-    <p class="pq-lead" id="anSub">Quem abriu o site, de onde e por quanto tempo. Dados anônimos, sem cookies e sem IP.</p>
+    <p class="pq-lead" id="anSub">Quem abriu o site e de onde (amostra de 1 em 5, já multiplicada). Tempo de tela, tempo real e pico ficam no PostHog. Dados anônimos, sem IP.</p>
   </section>
 
   <form class="an-login" id="login" hidden>
@@ -43,7 +43,7 @@
     <section class="an-kpis" id="kpis"></section>
 
     <section class="an-block">
-      <h2>Pessoas ao mesmo tempo</h2>
+      <h2>Visitas ao longo do tempo</h2>
       <div class="an-chart" id="chart"></div>
     </section>
 
@@ -52,7 +52,7 @@
       <div class="an-block"><h2>TVs e origem</h2><div id="tvs"></div><div class="an-chips" id="sources"></div></div>
     </section>
 
-    <section class="an-block"><h2>Tempo de tela por estado</h2><div class="an-states" id="states"></div></section>
+    <section class="an-block"><h2>Visitas por estado</h2><div class="an-states" id="states"></div></section>
 
     <section class="an-two">
       <div class="an-block"><h2>Cidades que mais abriram</h2><div class="an-chips" id="cities"></div></div>
@@ -68,6 +68,8 @@
     </section>
   </div>
 </main>
+<script src="posthog-config.js"></script>
+<script src="posthog.js"></script>
 <script src="analytics.js"></script>
 </body>
 </html>

@@ -441,8 +441,6 @@ body.og .panel, body.og .search { animation: none !important; opacity: 1 !import
   .evo svg { height: 56px; }
 
   /* card da cidade compacto (4 primeiros), expande com um toque */
-  .pin:not(.open) .cl:nth-of-type(n+6), .pin:not(.open) .cmp { display: none; }
-  .pin:not(.open)::after { content: "Toque para ver todos"; display: block; margin-top: 6px; font-size: 11px; color: var(--muted); }
   .pin { max-height: 62vh; }
 }
 @media (min-width: 901px) { .scrim { display: none; } }
@@ -603,3 +601,24 @@ body.og .soon-count { display: none; }
 .score-top { flex-wrap: wrap; row-gap: var(--s2); }
 .score-top .eyebrow { flex: 0 1 auto; }
 .badges { flex-wrap: wrap; justify-content: flex-end; margin-left: auto; min-width: 0; }
+
+/* ---------- celular ---------- */
+@media (max-width: 900px) {
+  /* cartão do município: só o top 3 de candidatos, sem rodapé */
+  .pin .cl:nth-of-type(n+5), .tip .cl:nth-of-type(n+5), .pin .cmp, .tip .cmp { display: none; }
+  .pin .sub, .tip .sub { margin-bottom: 6px; }
+
+  /* painel de controles compacto: busca + ícones na primeira linha, seletores na segunda, legenda só quando expandido */
+  .controls { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; padding: 4px 10px 10px; }
+  .controls > .grab { grid-column: 1 / -1; }
+  .controls > .search { grid-column: 1; grid-row: 2; min-width: 0; }
+  .controls > .actions { display: contents; }
+  .controls .actions .btn { grid-row: 2; width: 42px; height: 42px; padding: 0; border-radius: var(--r-md); }
+  .controls .actions .btn span { display: none; }
+  .controls .actions .btn svg { width: 18px; height: 18px; }
+  .controls > .ctl-row:not(.actions) { grid-column: 1 / -1; grid-row: 3; flex-wrap: nowrap; gap: 8px; }
+  .controls > .ctl-row:not(.actions) .seg button { padding: 6px 9px; }
+  .controls #modeSeg button span { display: none; }
+  .controls > .ctl-extra { grid-column: 1 / -1; grid-row: 4; }
+  .controls .search input { height: 42px; }
+}

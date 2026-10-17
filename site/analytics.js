@@ -43,7 +43,7 @@ function demo(h) {
     totals: [{ uniques: V * 7, visits: V * 25, pageviews: V * 40, secs: V * 1900 }], now: [{ n: Math.round(r(900, 3000)) }], series, peak: [{ t: series[Math.round(series.length * .72)].t, n: 8120 }],
     tvPeak: [{ n: 147 }], tvs: [{ n: 359 }],
     devices: [{ device: 'mobile', visits: V * 22, secs: V * 920 }, { device: 'desktop', visits: V * 3, secs: V * 940 }, { device: 'tablet', visits: V * .3, secs: V * 30 }, { device: 'tv', visits: V * .02, secs: V * 8 }],
-    states: UFS.map((uf, i) => ({ uf, secs: w[i] * V * 60 })),
+    states: UFS.map((uf, i) => ({ uf, n: Math.round(w[i] * V * 2) })), scale: [{ k: 5 }],
     cities: ['São Paulo|SP', 'Rio de Janeiro|RJ', 'Curitiba|PR', 'Fortaleza|CE', 'Belo Horizonte|MG', 'Salvador|BA', 'Brasília|DF', 'Recife|PE', 'Porto Alegre|RS', 'João Pessoa|PB', 'Goiânia|GO', 'Joinville|SC'].map((s, i) => { const [city, uf] = s.split('|'); return { city, uf, n: Math.round(V * 0.9 / (i + 1.5)) }; }),
     countries: [['US', 35.6], ['PT', 11.1], ['AR', 10.8], ['CA', 6.6], ['PY', 3.7], ['GB', 3], ['ES', 2.9], ['CL', 2.6]].map(([country, n]) => ({ country, n: n * 1000 })),
     orgs: [['Tribunal Superior Eleitoral', 80], ['TRE da Paraíba', 50], ['Serpro', 820], ['Prodesp', 740], ['Câmara dos Deputados', 770], ['TRT da 9ª Região', 17060], ['Editora Globo', 480], ['Globo', 210], ['Banco do Brasil', 250], ['Itaú Unibanco', 60], ['Google LLC', 2000], ['Microsoft Corporation', 550]].map(([org, sinais]) => ({ org, country: 'BR', sinais, n: sinais / 3 })).concat([{ org: 'Bundesministerium des Innern', country: 'DE', sinais: 17150, n: 90 }]),
@@ -71,40 +71,39 @@ function chart(series) {
 }
 
 function render(d) {
-  const t = d.totals?.[0] || {}, peak = d.peak?.[0], tvp = d.tvPeak?.[0]?.n || 0;
+  const K = +(d.scale?.[0]?.k) || 1, t = d.totals?.[0] || {};
   $('#kpis').innerHTML = [
-    [nf(d.now?.[0]?.n), 'agora', 'ativos nos últimos 90 s'],
-    [big(peak?.n), 'pessoas ao mesmo tempo', peak?.t ? `pico em ${new Date(peak.t).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}` : 'pico no período'],
-    [big(t.uniques), 'pessoas diferentes', 'navegadores únicos'],
-    [big(t.visits), 'visitas', `${big(t.pageviews)} páginas vistas`],
-    [dur(+t.secs || 0), 'de tela aberta', 'soma da aba visível'],
+    [big((+t.visits || 0) * K), 'visitas', 'sessões distintas'],
+    [big((+t.uniques || 0) * K), 'pessoas diferentes', 'navegadores únicos'],
+    [big((+t.pageviews || 0) * K), 'páginas vistas', `amostra 1 em ${K}`],
+    [nf((+d.tvs?.[0]?.n || 0) * K), 'TVs', 'navegadores de smart TV'],
+    ['PostHog', 'tempo real e tempo de tela', 'abra o dashboard do projeto'],
   ].map(([n, l, s]) => `<div class="an-kpi"><b>${n}</b><span>${l}</span><small>${s}</small></div>`).join('');
-  chart((d.series || []).map((p) => ({ t: p.t, n: +p.n })));
+  chart((d.series || []).map((p) => ({ t: p.t, n: (+p.n) * K })));
 
-  const dv = d.devices || [], vt = dv.reduce((a, r) => a + +r.visits, 0) || 1, st = dv.reduce((a, r) => a + +r.secs, 0) || 1;
-  const o = ['mobile', 'desktop', 'tablet', 'tv'];
-  const part = (k, tot) => dv.filter((r) => r.device !== 'tv' || k === 'visits').sort((a, b) => o.indexOf(a.device) - o.indexOf(b.device));
-  $('#devices').innerHTML = `<h3>Visitas</h3>${bars(part('visits').map((r) => ({ k: DEV[r.device] || r.device, v: +r.visits })), (v) => pct(v / vt))}<h3>Tempo de tela</h3>${bars(part('secs').map((r) => ({ k: DEV[r.device] || r.device, v: +r.secs })), (v) => pct(v / st))}`;
-  $('#tvs').innerHTML = `<div class="an-two-nums"><div><b>${nf(d.tvs?.[0]?.n)}</b><span>TVs</span><small>até ${nf(tvp)} ao mesmo tempo</small></div></div>`;
+  const dv = (d.devices || []).filter((r) => r.device !== 'tv'), vt = dv.reduce((a, r) => a + +r.visits, 0) || 1;
+  const o = ['mobile', 'desktop', 'tablet'];
+  $('#devices').innerHTML = bars(dv.sort((a, b) => o.indexOf(a.device) - o.indexOf(b.device)).map((r) => ({ k: DEV[r.device] || r.device, v: +r.visits })), (v) => pct(v / vt));
+  $('#tvs').innerHTML = `<div class="an-two-nums"><div><b>${nf((+d.tvs?.[0]?.n || 0) * K)}</b><span>TVs</span><small>navegadores de smart TV (estimado)</small></div></div>`;
   const S = d.sources || [], sm = S.reduce((a, r) => a + +r.n, 0) || 1;
   $('#sources').innerHTML = S.map((r) => `<span class="an-chip">${esc(SRC[r.source] || r.source)} <b>${pct(r.n / sm, 0)}</b></span>`).join('') || '';
 
-  const sts = (d.states || []).map((r) => ({ uf: r.uf, secs: +r.secs })), tt = sts.reduce((a, r) => a + r.secs, 0) || 1, mm = Math.max(...sts.map((r) => r.secs), 1);
+  const sts = (d.states || []).map((r) => ({ uf: r.uf, secs: +r.n })), tt = sts.reduce((a, r) => a + r.secs, 0) || 1, mm = Math.max(...sts.map((r) => r.secs), 1);
   $('#states').innerHTML = sts.map((r) => `<div class="row"><span class="uf">${esc(r.uf)}</span><span class="b"><i style="width:${(r.secs / mm) * 100}%"></i></span><span class="v">${pct(r.secs / tt)}</span></div>`).join('') || '<p class="an-note">Sem dados.</p>';
 
-  $('#cities').innerHTML = (d.cities || []).map((r) => `<span class="an-chip">${esc(r.city)} <small>${esc(r.uf)}</small> <b>${big(r.n)}</b></span>`).join('') || '<p class="an-note">Sem dados.</p>';
+  $('#cities').innerHTML = (d.cities || []).map((r) => `<span class="an-chip">${esc(r.city)} <small>${esc(r.uf)}</small> <b>${big(r.n * K)}</b></span>`).join('') || '<p class="an-note">Sem dados.</p>';
   const C = (d.countries || []).filter((r) => r.country !== 'BR' && r.country !== '??'), tot = (d.countries || []).length;
-  $('#countries').innerHTML = C.map((r) => `<span class="an-chip">${esc(NOME_PAIS(r.country))} <b>${big(r.n)}</b></span>`).join('') || '<p class="an-note">Sem dados.</p>';
+  $('#countries').innerHTML = C.map((r) => `<span class="an-chip">${esc(NOME_PAIS(r.country))} <b>${big(r.n * K)}</b></span>`).join('') || '<p class="an-note">Sem dados.</p>';
   $('#countriesNote').textContent = tot ? `Visitas. ${tot} países no total.` : '';
 
   const G = groupOrgs(d.orgs || []);
-  $('#orgs').innerHTML = G.map(([name, rows]) => `<div class="an-grp"><span class="gn">${esc(name)}</span><div class="an-chips">${rows.map((r) => `<span class="an-chip">${esc(r.org)} <b>${big(r.sinais)}</b> <small>sinais</small></span>`).join('')}</div></div>`).join('') || '<p class="an-note">Nenhuma rede de interesse identificada ainda.</p>';
+  $('#orgs').innerHTML = G.map(([name, rows]) => `<div class="an-grp"><span class="gn">${esc(name)}</span><div class="an-chips">${rows.map((r) => `<span class="an-chip">${esc(r.org)} <b>${big(r.sinais * K)}</b> <small>visitas</small></span>`).join('')}</div></div>`).join('') || '<p class="an-note">Nenhuma rede de interesse identificada ainda.</p>';
 
   const P = d.pages || [], pm = P.reduce((a, r) => a + +r.pageviews, 0) || 1;
   const PN = { home: 'Início', pesquisas: 'Pesquisas', apuracao: 'Apuração 2º turno', 'apuracao:1turno': 'Apuração 1º turno', analytics: 'Analytics' };
-  $('#pages').innerHTML = bars(P.map((r) => ({ k: PN[r.page] || r.page, v: +r.pageviews })), (v) => `${big(v)} <small>${pct(v / pm, 0)}</small>`);
+  $('#pages').innerHTML = bars(P.map((r) => ({ k: PN[r.page] || r.page, v: +r.pageviews * K })), (v) => `${big(v)} <small>${pct(v / pm, 0)}</small>`);
   const CL = d.clicks || [], CN = { pesquisas: 'Pesquisas eleitorais', apuracao: 'Apuração do 1º turno', compartilhar: 'Compartilhar' };
-  $('#clicks').innerHTML = CL.length ? bars(CL.map((r) => ({ k: CN[r.label] || r.label, v: +r.n })), (v) => big(v)) : '<p class="an-note">Sem cliques ainda.</p>';
+  $('#clicks').innerHTML = CL.length ? bars(CL.map((r) => ({ k: CN[r.label] || r.label, v: +r.n * K })), (v) => big(v)) : '<p class="an-note">Sem cliques ainda.</p>';
 }
 
 /* ---------- carregar ---------- */

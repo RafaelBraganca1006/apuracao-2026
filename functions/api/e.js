@@ -28,7 +28,7 @@ export async function onRequestPost({ request, env }) {
       clip(b.x || '', 24),                                      // 10 detalhe (ex.: qual botão)
       clip(b.s, 32),                                            // 11 sessão
     ],
-    doubles: [secs, +cf.asn || 0],                              // 1 segundos de tela · 2 ASN
+    doubles: [secs, +cf.asn || 0, Math.min(1000, Math.max(1, +b.k || 1))],   // 1 segundos de tela · 2 ASN · 3 taxa de amostragem (1 em k)
   });
   return new Response(null, { status: 204 });
 }

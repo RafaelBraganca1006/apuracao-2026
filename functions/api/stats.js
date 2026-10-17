@@ -15,13 +15,11 @@ export function queries(hours) {
   const W = `timestamp > NOW() - INTERVAL '${hours}' HOUR`;
   return {
     totals: `SELECT COUNT(DISTINCT index1) AS uniques, COUNT(DISTINCT blob11) AS visits, SUM(IF(blob1 = 'pageview', _sample_interval, 0)) AS pageviews, ${BEAT} AS secs FROM ${T} WHERE ${W}`,
-    now: `SELECT COUNT(DISTINCT index1) AS n FROM ${T} WHERE timestamp > NOW() - INTERVAL '90' SECOND`,
-    series: `SELECT toStartOfInterval(timestamp, INTERVAL '5' MINUTE) AS t, COUNT(DISTINCT index1) AS n FROM ${T} WHERE ${W} GROUP BY t ORDER BY t`,
-    peak: `SELECT toStartOfInterval(timestamp, INTERVAL '1' MINUTE) AS t, COUNT(DISTINCT index1) AS n FROM ${T} WHERE ${W} GROUP BY t ORDER BY n DESC LIMIT 1`,
-    tvPeak: `SELECT toStartOfInterval(timestamp, INTERVAL '1' MINUTE) AS t, COUNT(DISTINCT index1) AS n FROM ${T} WHERE ${W} AND blob4 = 'tv' GROUP BY t ORDER BY n DESC LIMIT 1`,
+    scale: `SELECT MAX(double3) AS k FROM ${T} WHERE ${W}`,
+    series: `SELECT toStartOfInterval(timestamp, INTERVAL '5' MINUTE) AS t, COUNT(DISTINCT blob11) AS n FROM ${T} WHERE ${W} GROUP BY t ORDER BY t`,
     tvs: `SELECT COUNT(DISTINCT index1) AS n FROM ${T} WHERE ${W} AND blob4 = 'tv'`,
     devices: `SELECT blob4 AS device, COUNT(DISTINCT blob11) AS visits, ${BEAT} AS secs FROM ${T} WHERE ${W} GROUP BY device`,
-    states: `SELECT blob7 AS uf, ${BEAT} AS secs FROM ${T} WHERE ${W} AND blob6 = 'BR' AND blob7 != '' GROUP BY uf ORDER BY secs DESC LIMIT 30`,
+    states: `SELECT blob7 AS uf, COUNT(DISTINCT blob11) AS n FROM ${T} WHERE ${W} AND blob6 = 'BR' AND blob7 != '' GROUP BY uf ORDER BY n DESC LIMIT 30`,
     cities: `SELECT blob8 AS city, blob7 AS uf, COUNT(DISTINCT index1) AS n FROM ${T} WHERE ${W} AND blob6 = 'BR' AND blob8 != '' GROUP BY city, uf ORDER BY n DESC LIMIT 24`,
     countries: `SELECT blob6 AS country, COUNT(DISTINCT index1) AS n FROM ${T} WHERE ${W} GROUP BY country ORDER BY n DESC LIMIT 24`,
     orgs: `SELECT blob9 AS org, blob6 AS country, SUM(_sample_interval) AS sinais, COUNT(DISTINCT index1) AS n FROM ${T} WHERE ${W} AND blob9 != '' GROUP BY org, country ORDER BY sinais DESC LIMIT 300`,

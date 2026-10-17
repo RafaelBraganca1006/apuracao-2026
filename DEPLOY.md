@@ -25,7 +25,27 @@ O `wrangler.toml` diz tudo: os arquivos estáticos vêm de `site/` (o `_headers`
 atende só `/api/*` (coleta e painel do analytics) e o Analytics Engine fica ligado como `AE`. Cada push em `main` publica.
 O site abre em `https://apuracao-2026.SEU_SUBDOMINIO.workers.dev`; domínio próprio em Settings → Domains & Routes.
 
-## 3. Dados ao vivo no R2
+## 3. Dados ao vivo sem R2 e sem cartão (recomendado)
+
+O coletor republica o `site/` pelo próprio Cloudflare Workers a cada rodada, levando junto `data/live.json`,
+`history.json` e `snaps/`. Só sobem os arquivos que mudaram (~2 s de upload, ~13 s no total). Arquivos estáticos são servidos de graça
+e com cache do edge (`_headers`: 15 s para `live.json`). O `site/config.js` não muda (`'data/'`).
+
+Uma vez, no Mac: `npx wrangler login` (já feito nesta máquina). Teste:
+
+```bash
+collector/publish_live.sh        # publica o site/data/live.json que existir
+curl -I https://SEU_SITE/data/live.json
+```
+
+Testado em 3 deploys seguidos sem limitação. Cuidados:
+
+- Um `git push` durante a apuração publica o site **sem** os dados (eles são gitignored) até a próxima rodada do coletor (≤ 1 min).
+- Não confirmei limite de deploys por dia da Cloudflare; se aparecer erro, aumente o `--loop` do coletor (60–90 s).
+
+## 3b. (Opcional) Dados ao vivo no R2
+
+Só vale se você quiser CDN própria para o `live.json` (exige cartão cadastrado, sem cobrança dentro do grátis). 
 
 1. R2 → Create bucket (ex.: `apuracao-dados`) → Settings → **Public access** (domínio `r2.dev` ou domínio próprio,
    ex.: `dados.seudominio.com`) e **CORS policy** (cole `collector/r2-cors.json`).
@@ -52,11 +72,11 @@ window.TRACKER_LIVE_BASE = 'https://dados.seudominio.com/';   // ou https://pub-
 caffeinate -i python3 collector/collect.py --election 6258 \
   --out site/data/live.json --history site/data/history.json \
   --snapshots site/data/snaps --loop 45 \
-  --after "collector/upload_r2.sh apuracao-dados"
+  --after "collector/publish_live.sh"
 ```
 
-Teste antes com o 1º turno ou um `live.json` qualquer: rode `collector/upload_r2.sh apuracao-dados` e abra
-`https://dados.seudominio.com/live.json`.
+Teste antes com o 1º turno ou um `live.json` qualquer: rode `collector/publish_live.sh` e abra `https://SEU_SITE/data/live.json`.
+(Com R2: troque o `--after` por `collector/upload_r2.sh apuracao-dados`.)
 
 ## 5. Antes de divulgar
 

@@ -1,4 +1,4 @@
-# Publicar: Cloudflare Pages (site) + R2 (dados ao vivo)
+# Publicar: Cloudflare Workers (site + API) + R2 (dados ao vivo)
 
 O site (`site/`) é estático. Só o `live.json`/`history.json` mudam durante a apuração, então eles ficam
 num bucket R2 com CDN, atualizado pelo coletor. Assim nenhum commit/deploy acontece na noite da eleição.
@@ -13,16 +13,17 @@ git push -u origin main
 
 `.gitignore` já deixa de fora `live.json`, `history.json` e `snaps/` (gerados pelo coletor).
 
-## 2. Site no Cloudflare Pages
+## 2. Site no Cloudflare (Workers com arquivos estáticos)
 
-Dashboard → Workers & Pages → Create → Pages → Connect to Git → escolha o repositório.
+Dashboard → Workers & Pages → **Create application → Import a repository** → GitHub → `apuracao-2026`.
 
-- Framework preset: None
+- Project name: `apuracao-2026` (igual ao `name` do `wrangler.toml`)
 - Build command: (vazio)
-- Build output directory: `site`
+- Deploy command: `npx wrangler deploy` (já vem preenchido)
 
-O `site/_headers` (cache) é lido automaticamente. O site abre em `https://NOME.pages.dev`; domínio próprio em
-Custom domains.
+O `wrangler.toml` diz tudo: os arquivos estáticos vêm de `site/` (o `_headers` é lido automaticamente), `worker/index.js`
+atende só `/api/*` (coleta e painel do analytics) e o Analytics Engine fica ligado como `AE`. Cada push em `main` publica.
+O site abre em `https://apuracao-2026.SEU_SUBDOMINIO.workers.dev`; domínio próprio em Settings → Domains & Routes.
 
 ## 3. Dados ao vivo no R2
 
@@ -77,16 +78,16 @@ O beacon respeita "Não rastrear" e não envia nada em `localhost`.
 
 Configuração (uma vez):
 
-1. **Plano pago dos Workers** (US$ 5/mês): o grátis (100 mil requisições/dia) acaba em minutos na noite da apuração.
-   Dashboard → Workers & Pages → Plans.
-2. Pages → seu projeto → Settings → **Functions → Analytics Engine bindings**: variable `AE`, dataset `apuracao`
-   (o `wrangler.toml` já declara; confirme se aparece).
-3. Crie um **API token** (My Profile → API Tokens → Create Token → Custom) com `Account → Account Analytics → Read`.
-4. Pages → Settings → **Variables and Secrets** (Production), tipo *Secret*:
+1. **Plano pago dos Workers** (US$ 5/mês): o grátis (100 mil requisições de Worker por dia) acaba em minutos na noite da apuração.
+   Só `/api/*` conta; os arquivos estáticos não. Dashboard → Workers & Pages → Plans.
+2. Crie um **API token** (My Profile → API Tokens → Create Token → Custom) com `Account → Account Analytics → Read`.
+3. Worker `apuracao-2026` → Settings → **Variables and Secrets** → Add, tipo *Secret*:
    - `CF_ACCOUNT_ID` — o ID da conta (barra lateral direita do dashboard)
-   - `CF_API_TOKEN` — o token do passo 3
+   - `CF_API_TOKEN` — o token do passo 2
    - `STATS_TOKEN` — uma senha longa que você inventa (ex.: `openssl rand -hex 24`)
-5. Faça um novo deploy (qualquer push) e abra `https://SEU_SITE/analytics.html`. Cole o `STATS_TOKEN`.
+4. Faça um novo deploy (qualquer push) e abra `https://SEU_SITE/analytics.html`. Cole o `STATS_TOKEN`.
+
+O binding `AE` (dataset `apuracao`) vem do `wrangler.toml`; confira em Settings → Bindings.
 
 Pré-visualizar o painel sem dados: `analytics.html?demo`. Testar o beacon local: `LOG_BEACON=1 node collector/serve.js 8765` e abrir
 `http://localhost:8765/?beacon`.

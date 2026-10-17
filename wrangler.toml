@@ -1,7 +1,14 @@
-# Cloudflare Pages: site estático em site/ + funções em functions/ + Analytics Engine
+# Cloudflare Workers com arquivos estáticos (site/) + API de analytics (worker/index.js) + Analytics Engine.
+# Deploy: `npx wrangler deploy` (é o comando padrão do Workers Builds ligado ao GitHub).
 name = "apuracao-2026"
-pages_build_output_dir = "site"
+main = "worker/index.js"
 compatibility_date = "2026-01-01"
+
+[assets]
+directory = "./site"
+binding = "ASSETS"
+# só /api/* passa pelo Worker (isso é o que conta nas requisições); o resto são arquivos estáticos
+run_worker_first = ["/api/*"]
 
 [[analytics_engine_datasets]]
 binding = "AE"

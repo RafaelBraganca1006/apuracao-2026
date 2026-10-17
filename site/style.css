@@ -622,3 +622,10 @@ body.og .soon-count { display: none; }
   .controls > .ctl-extra { grid-column: 1 / -1; grid-row: 4; }
   .controls .search input { height: 42px; }
 }
+
+@media (max-width: 900px) {
+  /* o gesto de arrastar vertical é tratado em JS no painel inteiro; rolagem horizontal e listas internas continuam nativas */
+  .score, .controls { touch-action: pan-x; }
+  .rank-wrap { touch-action: pan-y; }
+  .controls input { touch-action: manipulation; }
+}

@@ -99,6 +99,25 @@ const fmtInt = (n) => Math.round(n).toLocaleString('pt-BR');
 const fmtPct = (x, d = 2) => (x * 100).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }) + '%';
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
 const isMobile = () => window.matchMedia('(max-width: 900px)').matches;
+// Arrastar para cima/baixo em QUALQUER ponto do painel (celular). Age assim que o dedo passa de 14 px na vertical;
+// o clique que o gesto geraria é engolido. Campos de texto e listas roláveis ficam de fora.
+function swipePanel(el, onUp, onDown, ignore = 'input, textarea, select, .rank-wrap, #sres') {
+  let x0 = 0, y0 = 0, active = false, done = false;
+  el.addEventListener('pointerdown', (e) => {
+    if (!isMobile() || e.pointerType === 'mouse' && e.button !== 0 || e.target.closest(ignore)) return;
+    x0 = e.clientX; y0 = e.clientY; active = true; done = false;
+  });
+  el.addEventListener('pointermove', (e) => {
+    if (!active || done) return;
+    const dx = e.clientX - x0, dy = e.clientY - y0;
+    if (Math.abs(dy) < 14 || Math.abs(dy) < Math.abs(dx) * 1.2) return;
+    done = true;
+    if (dy < 0) onUp(); else onDown();
+  });
+  const end = () => { active = false; };
+  el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+  el.addEventListener('click', (e) => { if (done) { e.preventDefault(); e.stopPropagation(); done = false; } }, true);
+}
 
 async function getJSON(url, bust) {
   // janela de 15 s: o CDN pode cachear e todos os visitantes dividem o mesmo pedido
@@ -1104,17 +1123,11 @@ function syncPollMode() {
 
 function updateScoreVar() { document.documentElement.style.setProperty('--score-b', Math.round($('#score').getBoundingClientRect().bottom) + 'px'); }
 new ResizeObserver(updateScoreVar).observe($('#score'));
-{ // celular: o placar tem versão resumida (só os dois percentuais), retrátil pela alça de baixo, igual ao painel de controles
-  const sc = $('#score'), g = $('#scoreGrab'); let y0 = null;
+{ // celular: o placar tem versão resumida (só os dois percentuais), retrátil arrastando em qualquer ponto dele
+  const sc = $('#score'), g = $('#scoreGrab');
   const set = (min) => { sc.classList.toggle('min', min); g.setAttribute('aria-expanded', String(!min)); };
   set(matchMedia('(max-width: 900px)').matches);
-  g.addEventListener('pointerdown', (e) => { y0 = e.clientY; try { g.setPointerCapture(e.pointerId); } catch (err) { /* ponteiro sintético */ } });
-  g.addEventListener('pointerup', (e) => {
-    if (y0 == null) return;
-    const dy = e.clientY - y0; y0 = null;
-    if (dy < -18) set(true); else if (dy > 18) set(false);                // painel no topo: arrastar para cima recolhe, para baixo expande
-  });
-  g.addEventListener('pointercancel', () => { y0 = null; });
+  swipePanel(sc, () => set(true), () => set(false));                     // painel no topo: arrastar para cima recolhe, para baixo expande
   g.addEventListener('keydown', (e) => { if (e.key === 'ArrowUp') set(true); else if (e.key === 'ArrowDown') set(false); });
 }
 
@@ -1272,20 +1285,14 @@ function setSheet(state, animate = true) {
 
 /* painel de controles: recolhe/expande (toque ou arraste) */
 {
-  const ctl = $('#controls'), g = $('#ctlGrab'); let y0 = null;
+  const ctl = $('#controls'), g = $('#ctlGrab');
   const setCtl = (collapsed) => {
     ctl.classList.toggle('collapsed', collapsed);
     try { localStorage.setItem('ctlCollapsed', collapsed ? '1' : '0'); } catch (e) { /* sem storage */ }
     setTimeout(() => { if (!S.uf && !S.sel && isMobile()) refit(true); }, 520);
   };
   try { const sv = localStorage.getItem('ctlCollapsed'); if (sv === '1' || (sv == null && matchMedia('(max-width: 900px)').matches)) ctl.classList.add('collapsed'); } catch (e) { /* sem storage */ }   // celular: legenda recolhida por padrão
-  g.addEventListener('pointerdown', (e) => { y0 = e.clientY; try { g.setPointerCapture(e.pointerId); } catch (err) { /* ponteiro sintético */ } });
-  g.addEventListener('pointerup', (e) => {
-    if (y0 == null) return;
-    const dy = e.clientY - y0; y0 = null;
-    if (dy > 18) setCtl(true); else if (dy < -18) setCtl(false);          // só arrasto: toque simples não faz nada
-  });
-  g.addEventListener('pointercancel', () => { y0 = null; });
+  swipePanel(ctl, () => setCtl(false), () => setCtl(true));            // painel embaixo: arrastar para baixo recolhe, para cima expande
   g.addEventListener('keydown', (e) => { if (e.key === 'ArrowDown') setCtl(true); else if (e.key === 'ArrowUp') setCtl(false); });
 }
 addEventListener('resize', () => { if (S.ready) { map.resize(); if (!S.uf) refit(false); renderEvo(); } });

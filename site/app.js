@@ -1132,17 +1132,30 @@ function renderAll() {
 }
 
 /* ================= dados ao vivo ================= */
+// Poupa leitura de arquivos (cada visitante gera requisições): só com a aba visível, intervalo com variação,
+// 60 s enquanto não há votos, history/snaps só a cada 3ª rodada e para de vez quando a apuração termina.
+let pulls = 0, lastPull = 0;
 async function pull() {
+  lastPull = Date.now();
+  const full = pulls++ % 3 === 0;
   try {
     const j = await getJSON(LIVE_BASE + 'live.json', true);
     S.liveR2 = normalize(j);
     S.liveAgg2 = aggregate(S.liveR2.rows);
     if (S.at == null) { S.r2 = S.liveR2; S.agg2 = S.liveAgg2; }   // em replay, o instante escolhido continua na tela
   } catch (e) { /* sem arquivo ainda: segue em "aguardando" */ }
-  try { S.history = await getJSON(LIVE_BASE + 'history.json', true); } catch (e) { /* opcional */ }
-  try { S.snapTs = await getJSON(LIVE_BASE + 'snaps/index.json', true); } catch (e) { /* fotos opcionais */ }
+  if (full) {
+    try { S.history = await getJSON(LIVE_BASE + 'history.json', true); } catch (e) { /* opcional */ }
+    try { S.snapTs = await getJSON(LIVE_BASE + 'snaps/index.json', true); } catch (e) { /* fotos opcionais */ }
+  }
   renderAll();
 }
+function schedulePull() {
+  if (status() === 'done') return;                                   // apuração encerrada: nada mais muda
+  const delay = (status() === 'waiting' ? 2 * POLL_MS : POLL_MS) * (0.85 + Math.random() * 0.3);
+  setTimeout(async () => { if (!document.hidden) await pull(); schedulePull(); }, delay);
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S.ready && Date.now() - lastPull > POLL_MS) pull(); });
 
 /* ================= interações ================= */
 document.querySelectorAll('#dataSeg button').forEach((b) => b.addEventListener('click', async () => {
@@ -1506,6 +1519,6 @@ function landing() {                                   // a câmera "pousa" no B
   Promise.all([getJSON('data/history1.json').catch(() => []), getJSON('data/snaps1/index.json').catch(() => [])]).then(([h, idx]) => { S.hist1 = h; S.snap1Ts = idx; renderEvo(); });
   await pull();
   setTimeout(landing, 30);
-  setInterval(pull, POLL_MS);
+  schedulePull();
 })();
 })();

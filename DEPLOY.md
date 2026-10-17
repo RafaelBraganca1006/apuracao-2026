@@ -27,21 +27,22 @@ O site abre em `https://apuracao-2026.SEU_SUBDOMINIO.workers.dev`; domínio pró
 
 ## 3. Dados ao vivo sem R2 e sem cartão (recomendado)
 
-O coletor republica o `site/` pelo próprio Cloudflare Workers a cada rodada, levando junto `data/live.json`,
-`history.json` e `snaps/`. Só sobem os arquivos que mudaram (~2 s de upload, ~13 s no total). Arquivos estáticos são servidos de graça
-e com cache do edge (`_headers`: 15 s para `live.json`). O `site/config.js` não muda (`'data/'`).
+Os dados ao vivo ficam num **projeto próprio**, `apuracao-dados` (`data-worker/`), que só serve arquivos estáticos
+(`live.json`, `history.json`, `snaps/`) com CORS liberado e cache de 15 s. Arquivos estáticos não têm custo por requisição.
+O coletor republica esse projeto a cada rodada (~13 s; só sobem os arquivos que mudaram). Como é separado do site,
+**um `git push` nunca apaga os dados**. O `site/config.js` já aponta para `https://apuracao-dados.rbranganca.workers.dev/`
+(em localhost usa `site/data/`).
 
-Uma vez, no Mac: `npx wrangler login` (já feito nesta máquina). Teste:
+Uma vez, no Mac: `npx wrangler login` (já feito). Teste:
 
 ```bash
-collector/publish_live.sh        # publica o site/data/live.json que existir
-curl -I https://SEU_SITE/data/live.json
+collector/publish_live.sh        # publica data-worker/public/live.json
+curl -I https://apuracao-dados.rbranganca.workers.dev/live.json
 ```
 
-Testado em 3 deploys seguidos sem limitação. Cuidados:
+Na noite da apuração o coletor escreve direto em `data-worker/public/` (veja o passo 4).
 
-- Um `git push` durante a apuração publica o site **sem** os dados (eles são gitignored) até a próxima rodada do coletor (≤ 1 min).
-- Não confirmei limite de deploys por dia da Cloudflare; se aparecer erro, aumente o `--loop` do coletor (60–90 s).
+Cuidados: não confirmei se a Cloudflare limita deploys por dia (testei vários seguidos, sem erro). Se aparecer erro, aumente o `--loop`.
 
 ## 3b. (Opcional) Dados ao vivo no R2
 
@@ -70,8 +71,8 @@ window.TRACKER_LIVE_BASE = 'https://dados.seudominio.com/';   // ou https://pub-
 
 ```bash
 caffeinate -i python3 collector/collect.py --election 6258 \
-  --out site/data/live.json --history site/data/history.json \
-  --snapshots site/data/snaps --loop 45 \
+  --out data-worker/public/live.json --history data-worker/public/history.json \
+  --snapshots data-worker/public/snaps --loop 45 \
   --after "collector/publish_live.sh"
 ```
 

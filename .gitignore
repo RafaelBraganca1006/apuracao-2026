@@ -11,3 +11,8 @@ __pycache__/
 node_modules/
 .env
 .wrangler/
+
+# dados ao vivo do projeto apuracao-dados (gerados pelo coletor)
+data-worker/public/live.json
+data-worker/public/history.json
+data-worker/public/snaps/

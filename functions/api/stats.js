@@ -1,5 +1,7 @@
 // Resumo do analytics para o painel (/analytics.html). Protegido por token (STATS_TOKEN).
 // Lê o Analytics Engine pela API SQL da Cloudflare (precisa de CF_ACCOUNT_ID e CF_API_TOKEN com "Account Analytics: Read").
+import { fromPostHog } from '../_lib/posthog.js';
+
 const T = 'apuracao';
 const BEAT = "SUM(IF(blob1 = 'beat', double1 * _sample_interval, 0.0))";   // 0.0: o IF() exige o mesmo tipo (Double) nos dois ramos
 
@@ -37,10 +39,12 @@ export async function onRequestGet({ request, env }) {
   const hours = Math.min(720, Math.max(1, parseInt(url.searchParams.get('hours'), 10) || 48));
   try {
     // cada consulta é independente: se uma falhar, as outras seções continuam e o erro vai em `errors`
-    const q = queries(hours), keys = Object.keys(q), res = await Promise.allSettled(keys.map((k) => sql(env, q[k])));
+    const q = queries(hours), keys = Object.keys(q);
+    const [res, ph] = await Promise.all([Promise.allSettled(keys.map((k) => sql(env, q[k]))), fromPostHog(env, hours).catch((e) => ({ data: null, errors: [`posthog: ${String(e.message || e).slice(0, 200)}`] }))]);
     const out = {}, errors = [];
     keys.forEach((k, i) => { if (res[i].status === 'fulfilled') out[k] = res[i].value; else { out[k] = []; errors.push(`${k}: ${String(res[i].reason?.message || res[i].reason).slice(0, 220)}`); } });
-    return new Response(JSON.stringify({ hours, generated: new Date().toISOString(), errors, ...out }), { headers: head });
+    if (ph?.errors) errors.push(...ph.errors);
+    return new Response(JSON.stringify({ hours, generated: new Date().toISOString(), errors, ph: ph?.data || null, ...out }), { headers: head });
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e.message || e) }), { status: 502, headers: head });
   }

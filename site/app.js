@@ -1112,8 +1112,10 @@ new ResizeObserver(updateScoreVar).observe($('#score'));
   g.addEventListener('pointerup', (e) => {
     if (y0 == null) return;
     const dy = e.clientY - y0; y0 = null;
-    if (dy < -18) set(true); else if (dy > 18) set(false); else set(!sc.classList.contains('min'));   // painel no topo: arrastar para cima recolhe
+    if (dy < -18) set(true); else if (dy > 18) set(false);                // painel no topo: arrastar para cima recolhe, para baixo expande
   });
+  g.addEventListener('pointercancel', () => { y0 = null; });
+  g.addEventListener('keydown', (e) => { if (e.key === 'ArrowUp') set(true); else if (e.key === 'ArrowDown') set(false); });
 }
 
 /* ================= render geral ================= */
@@ -1268,8 +1270,10 @@ function setSheet(state, animate = true) {
   g.addEventListener('pointerup', (e) => {
     if (y0 == null) return;
     const dy = e.clientY - y0; y0 = null;
-    if (dy > 18) setCtl(true); else if (dy < -18) setCtl(false); else setCtl(!ctl.classList.contains('collapsed'));
+    if (dy > 18) setCtl(true); else if (dy < -18) setCtl(false);          // só arrasto: toque simples não faz nada
   });
+  g.addEventListener('pointercancel', () => { y0 = null; });
+  g.addEventListener('keydown', (e) => { if (e.key === 'ArrowDown') setCtl(true); else if (e.key === 'ArrowUp') setCtl(false); });
 }
 addEventListener('resize', () => { if (S.ready) { map.resize(); if (!S.uf) refit(false); renderEvo(); } });
 

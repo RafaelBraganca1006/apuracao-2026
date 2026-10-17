@@ -1,0 +1,6 @@
+/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=15, s-maxage=15
+/snaps/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=86400

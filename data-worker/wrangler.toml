@@ -1,0 +1,7 @@
+# Projeto só com os dados ao vivo (live.json, history.json, snaps/). Arquivos estáticos: sem custo por requisição,
+# servidos pelo edge com cache. Separado do site para que um push no GitHub nunca apague os dados.
+name = "apuracao-dados"
+compatibility_date = "2026-01-01"
+
+[assets]
+directory = "./public"

@@ -420,8 +420,8 @@ body.og .panel, body.og .search { animation: none !important; opacity: 1 !import
   .score.rank-open .rank-head { margin-bottom: var(--s2); }
 
   .controls { left: var(--gap); right: var(--gap); bottom: calc(var(--gap) + env(safe-area-inset-bottom)); width: auto; max-width: none; padding-top: 6px; }
-  .grab { display: block; align-self: center; width: 100%; height: 14px; padding: 0; background: none; border: 0; position: relative; touch-action: none; }
-  .grab::before { content: ""; position: absolute; left: 50%; top: 4px; width: 36px; height: 4px; margin-left: -18px; border-radius: 99px; background: var(--line-strong); }
+  .grab { display: block; align-self: center; width: 100%; height: 24px; cursor: grab; padding: 0; background: none; border: 0; position: relative; touch-action: none; }
+  .grab::before { content: ""; position: absolute; left: 50%; top: 9px; width: 36px; height: 4px; margin-left: -18px; border-radius: 99px; background: var(--line-strong); }
   .controls.collapsed .ctl-extra { grid-template-rows: 0fr; opacity: 0; }
   .ctl-row { flex-wrap: wrap; }
   .seg button { padding: 6px 10px; font-size: 12px; }
@@ -579,7 +579,7 @@ body.og .soon-count { display: none; }
 
 .score-grab { display: none; }
 @media (max-width: 900px) {
-  .score .score-grab { display: block; margin: 6px 0 -6px; }
+  .score .score-grab { display: block; margin: 0 0 -10px; }
   .score.min { padding-bottom: var(--s3); }
   .score.min .rank, .score.min .prog, .score.min .meta, .score.min .lead, .score.min .vt, .score.min .won,
   .score.min .soon-count, .score.min .soon-cta, .score.min .soon-sub { display: none; }

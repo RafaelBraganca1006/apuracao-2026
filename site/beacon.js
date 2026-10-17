@@ -9,9 +9,8 @@ if (/^(localhost|127\.|\[::1\])/.test(location.hostname) && !q.has('beacon')) re
 const rnd = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 const get = (st, k) => { try { let v = st.getItem(k); if (!v) { v = rnd(); st.setItem(k, v); } return v; } catch { return rnd(); } };
 const vid = get(localStorage, 'vid'), sid = get(sessionStorage, 'sid');
-// Modo econômico (plano grátis do Worker: 100 mil requisições/dia): só 1 em cada SAMPLE visitantes manda eventos,
-// de forma estável por navegador, e o painel multiplica os números por SAMPLE. Tempo de tela e "agora" ficam no PostHog.
-const SAMPLE = 5;
+// Só visita e cliques (sem batimentos): tempo de tela, "agora" e pico vêm do PostHog. SAMPLE > 1 amostra por navegador e o painel multiplica.
+const SAMPLE = 1;   // 1 = sem amostragem (o plano grátis do Worker pára de gravar após 100 mil requisições/dia; PostHog é a fonte dos totais)
 let h = 0; for (const c of vid) h = (h * 31 + c.charCodeAt(0)) >>> 0;
 if (h % SAMPLE !== 0) return;
 const path = location.pathname.replace(/\/+$/, '').split('/').pop().replace(/\.html$/, '');

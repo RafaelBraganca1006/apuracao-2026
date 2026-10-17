@@ -35,6 +35,18 @@ function groupOrgs(rows) {
 
 /* ---------- dados ---------- */
 function demo(h) {
+  const d = demoCF(h);
+  if (q.get('demo') !== 'ph') return d;
+  const secsPer = (n) => Math.round(n * 1900);
+  d.ph = {
+    totals: d.totals, now: [{ n: 2854 }], series: d.series,
+    devices: d.devices.map((r) => ({ ...r, device: { mobile: 'Mobile', desktop: 'Desktop', tablet: 'Tablet', tv: 'Tablet' }[r.device] })),
+    states: d.states.map((r) => ({ uf: r.uf, n: r.n, secs: secsPer(r.n) })), cities: d.cities, countries: d.countries,
+    sources: [['$direct', 52], ['t.co', 21], ['wa.me', 9], ['m.youtube.com', 6], ['instagram', 4], ['twitch.tv', 3]].map(([source, n]) => ({ source, n: n * 1000 })),
+  };
+  return d;
+}
+function demoCF(h) {
   const r = (a, b) => a + Math.random() * (b - a), pts = Math.round(h * 12), now = Date.now();
   const L = Math.min(pts, 288), series = Array.from({ length: L }, (_, i) => ({ t: new Date(now - (L - i) * 300000).toISOString(), n: Math.round(8000 * Math.exp(-((i - L * 0.72) ** 2) / (2 * (L * 0.12) ** 2)) + r(80, 400)) }));
   const UFS = 'SP MG RJ PR RS BA SC CE PE GO DF PA MA ES PB RN AL MT MS PI SE AM TO RO AC AP RR'.split(' '), w = [29, 9, 7.6, 6.8, 5.7, 5.1, 5.1, 4.8, 3.8, 2.6, 2.1, 2.2, 1.6, 1.8, 2.1, 1.6, 1.5, 1.2, 1.1, 1.1, 1, .9, .7, .5, .2, .2, .2];
@@ -43,7 +55,7 @@ function demo(h) {
     totals: [{ uniques: V * 7, visits: V * 25, pageviews: V * 40, secs: V * 1900 }], now: [{ n: Math.round(r(900, 3000)) }], series, peak: [{ t: series[Math.round(series.length * .72)].t, n: 8120 }],
     tvPeak: [{ n: 147 }], tvs: [{ n: 359 }],
     devices: [{ device: 'mobile', visits: V * 22, secs: V * 920 }, { device: 'desktop', visits: V * 3, secs: V * 940 }, { device: 'tablet', visits: V * .3, secs: V * 30 }, { device: 'tv', visits: V * .02, secs: V * 8 }],
-    states: UFS.map((uf, i) => ({ uf, n: Math.round(w[i] * V * 2) })), scale: [{ k: 5 }],
+    states: UFS.map((uf, i) => ({ uf, n: Math.round(w[i] * V * 2) })), scale: [{ k: 1 }],
     cities: ['São Paulo|SP', 'Rio de Janeiro|RJ', 'Curitiba|PR', 'Fortaleza|CE', 'Belo Horizonte|MG', 'Salvador|BA', 'Brasília|DF', 'Recife|PE', 'Porto Alegre|RS', 'João Pessoa|PB', 'Goiânia|GO', 'Joinville|SC'].map((s, i) => { const [city, uf] = s.split('|'); return { city, uf, n: Math.round(V * 0.9 / (i + 1.5)) }; }),
     countries: [['US', 35.6], ['PT', 11.1], ['AR', 10.8], ['CA', 6.6], ['PY', 3.7], ['GB', 3], ['ES', 2.9], ['CL', 2.6]].map(([country, n]) => ({ country, n: n * 1000 })),
     orgs: [['Tribunal Superior Eleitoral', 80], ['TRE da Paraíba', 50], ['Serpro', 820], ['Prodesp', 740], ['Câmara dos Deputados', 770], ['TRT da 9ª Região', 17060], ['Editora Globo', 480], ['Globo', 210], ['Banco do Brasil', 250], ['Itaú Unibanco', 60], ['Google LLC', 2000], ['Microsoft Corporation', 550]].map(([org, sinais]) => ({ org, country: 'BR', sinais, n: sinais / 3 })).concat([{ org: 'Bundesministerium des Innern', country: 'DE', sinais: 17150, n: 90 }]),
@@ -70,38 +82,53 @@ function chart(series) {
   el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Pessoas ao mesmo tempo ao longo do período">${grid}<path d="${area}" fill="var(--accent-soft)"/><path d="${d}" fill="none" stroke="var(--text)" stroke-width="2" stroke-linejoin="round"/>${lab}</svg>`;
 }
 
+// origem do tráfego: traduz domínio de referrer / utm_source do PostHog para os nomes usados no painel
+const SRC_RE = [['twitch', /twitch\.tv/], ['kick', /kick\.com/], ['youtube', /youtube\.com|youtu\.be/], ['x', /(^|\.)(twitter\.com|x\.com|t\.co)$/], ['instagram', /instagram\.com/], ['reddit', /reddit\.com/], ['facebook', /facebook\.com|fb\.com/], ['tiktok', /tiktok\.com/], ['whatsapp', /whatsapp\.com|wa\.me/], ['telegram', /telegram\.org|t\.me/], ['google', /google\./], ['bing', /bing\.com/], ['linkedin', /linkedin\.com|lnkd\.in/]];
+const srcName = (s) => { s = String(s || ''); if (s === '$direct' || !s) return 'direto'; const l = s.toLowerCase(); for (const [n, re] of SRC_RE) if (l === n || re.test(l)) return n; return l.includes('.') ? 'outro' : l; };
+
 function render(d) {
-  const K = +(d.scale?.[0]?.k) || 1, t = d.totals?.[0] || {};
-  $('#kpis').innerHTML = [
-    [big((+t.visits || 0) * K), 'visitas', 'sessões distintas'],
-    [big((+t.uniques || 0) * K), 'pessoas diferentes', 'navegadores únicos'],
-    [big((+t.pageviews || 0) * K), 'páginas vistas', `amostra 1 em ${K}`],
-    [nf((+d.tvs?.[0]?.n || 0) * K), 'TVs', 'navegadores de smart TV'],
-    ['PostHog', 'tempo real e tempo de tela', 'abra o dashboard do projeto'],
-  ].map(([n, l, s]) => `<div class="an-kpi"><b>${n}</b><span>${l}</span><small>${s}</small></div>`).join('');
-  chart((d.series || []).map((p) => ({ t: p.t, n: (+p.n) * K })));
+  const P = d.ph || null, K = +(d.scale?.[0]?.k) || 1;              // PostHog (K = 1) quando configurado; senão o Cloudflare
+  const pick = (k) => (P && P[k]?.length ? [P[k], 1] : [d[k] || [], K]);
+  const [tt, kt] = pick('totals'), t = tt[0] || {}, [nowr] = pick('now'), [ser, ks] = pick('series');
+  const peak = ser.reduce((m, p) => (+p.n * ks > (m?.n || 0) ? { t: p.t, n: +p.n * ks } : m), null);
+  const fmtT = (x) => new Date(x).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+  const kpis = P
+    ? [[nf(nowr[0]?.n), 'agora', 'pessoas ativas nos últimos 5 min'], [big(peak?.n), 'pessoas ao mesmo tempo', peak ? `pico em ${fmtT(peak.t)}` : 'pico no período'],
+       [big(t.uniques), 'pessoas diferentes', 'navegadores únicos'], [big(t.visits), 'visitas', `${big(t.pageviews)} páginas vistas`], [dur(+t.secs || 0), 'de tela aberta', 'soma da duração das sessões']]
+    : [[big((+t.visits || 0) * kt), 'visitas', 'sessões distintas'], [big((+t.uniques || 0) * kt), 'pessoas diferentes', 'navegadores únicos'], [big((+t.pageviews || 0) * kt), 'páginas vistas', K > 1 ? `amostra 1 em ${K}` : 'Cloudflare'],
+       [nf((+d.tvs?.[0]?.n || 0) * K), 'TVs', 'navegadores de smart TV'], ['PostHog', 'tempo real e tempo de tela', 'configure POSTHOG_API_KEY para ver aqui']];
+  $('#kpis').innerHTML = kpis.map(([n, l, s]) => `<div class="an-kpi"><b>${n}</b><span>${l}</span><small>${s}</small></div>`).join('');
+  $('#chartTitle').textContent = P ? 'Pessoas ativas ao longo do tempo' : 'Visitas ao longo do tempo';
+  chart(ser.map((p) => ({ t: p.t, n: (+p.n) * ks })));
 
-  const dv = (d.devices || []).filter((r) => r.device !== 'tv'), vt = dv.reduce((a, r) => a + +r.visits, 0) || 1;
-  const o = ['mobile', 'desktop', 'tablet'];
-  $('#devices').innerHTML = bars(dv.sort((a, b) => o.indexOf(a.device) - o.indexOf(b.device)).map((r) => ({ k: DEV[r.device] || r.device, v: +r.visits })), (v) => pct(v / vt));
-  $('#tvs').innerHTML = `<div class="an-two-nums"><div><b>${nf((+d.tvs?.[0]?.n || 0) * K)}</b><span>TVs</span><small>navegadores de smart TV (estimado)</small></div></div>`;
-  const S = d.sources || [], sm = S.reduce((a, r) => a + +r.n, 0) || 1;
-  $('#sources').innerHTML = S.map((r) => `<span class="an-chip">${esc(SRC[r.source] || r.source)} <b>${pct(r.n / sm, 0)}</b></span>`).join('') || '';
+  const [dvr, kd] = pick('devices'), dv = dvr.filter((r) => r.device !== 'tv'), o = ['mobile', 'desktop', 'tablet'];
+  const vt = dv.reduce((a, r) => a + +r.visits, 0) || 1, st = dv.reduce((a, r) => a + +r.secs, 0) || 0;
+  const norm = (r) => (r.device === 'Mobile' ? 'mobile' : r.device === 'Desktop' ? 'desktop' : r.device === 'Tablet' ? 'tablet' : String(r.device || '').toLowerCase());
+  dv.forEach((r) => { r.device = norm(r); });
+  dv.sort((x, y) => o.indexOf(x.device) - o.indexOf(y.device));
+  $('#devices').innerHTML = `<h3>Visitas</h3>${bars(dv.map((r) => ({ k: DEV[r.device] || r.device, v: +r.visits })), (v) => pct(v / vt))}` + (st ? `<h3>Tempo de tela</h3>${bars(dv.map((r) => ({ k: DEV[r.device] || r.device, v: +r.secs })), (v) => pct(v / st))}` : '');
+  $('#tvs').innerHTML = `<div class="an-two-nums"><div><b>${nf((+d.tvs?.[0]?.n || 0) * K)}</b><span>TVs</span><small>navegadores de smart TV (Cloudflare)</small></div></div>`;
+  const [Sr] = pick('sources'), S = Sr.map((r) => ({ source: srcName(r.source), n: +r.n })), sm = S.reduce((a, r) => a + r.n, 0) || 1, mS = new Map();
+  S.forEach((r) => mS.set(r.source, (mS.get(r.source) || 0) + r.n));
+  $('#sources').innerHTML = [...mS].sort((x, y) => y[1] - x[1]).map(([s, n]) => `<span class="an-chip">${esc(SRC[s] || s)} <b>${pct(n / sm, 0)}</b></span>`).join('');
 
-  const sts = (d.states || []).map((r) => ({ uf: r.uf, secs: +r.n })), tt = sts.reduce((a, r) => a + r.secs, 0) || 1, mm = Math.max(...sts.map((r) => r.secs), 1);
-  $('#states').innerHTML = sts.map((r) => `<div class="row"><span class="uf">${esc(r.uf)}</span><span class="b"><i style="width:${(r.secs / mm) * 100}%"></i></span><span class="v">${pct(r.secs / tt)}</span></div>`).join('') || '<p class="an-note">Sem dados.</p>';
+  const [stR, kst] = pick('states'), byTime = P && stR.some((r) => +r.secs > 0);
+  const sts = stR.map((r) => ({ uf: r.uf, v: byTime ? +r.secs : +r.n * kst })).sort((x, y) => y.v - x.v), tot = sts.reduce((a, r) => a + r.v, 0) || 1, mm = Math.max(...sts.map((r) => r.v), 1);
+  $('#statesTitle').textContent = byTime ? 'Tempo de tela por estado' : 'Visitas por estado';
+  $('#states').innerHTML = sts.map((r) => `<div class="row"><span class="uf">${esc(r.uf)}</span><span class="b"><i style="width:${(r.v / mm) * 100}%"></i></span><span class="v">${pct(r.v / tot)}</span></div>`).join('') || '<p class="an-note">Sem dados.</p>';
 
-  $('#cities').innerHTML = (d.cities || []).map((r) => `<span class="an-chip">${esc(r.city)} <small>${esc(r.uf)}</small> <b>${big(r.n * K)}</b></span>`).join('') || '<p class="an-note">Sem dados.</p>';
-  const C = (d.countries || []).filter((r) => r.country !== 'BR' && r.country !== '??'), tot = (d.countries || []).length;
-  $('#countries').innerHTML = C.map((r) => `<span class="an-chip">${esc(NOME_PAIS(r.country))} <b>${big(r.n * K)}</b></span>`).join('') || '<p class="an-note">Sem dados.</p>';
-  $('#countriesNote').textContent = tot ? `Visitas. ${tot} países no total.` : '';
+  const [cir, kc] = pick('cities');
+  $('#cities').innerHTML = cir.map((r) => `<span class="an-chip">${esc(r.city)} <small>${esc(r.uf)}</small> <b>${big(r.n * kc)}</b></span>`).join('') || '<p class="an-note">Sem dados.</p>';
+  const [cor, kn] = pick('countries'), C = cor.filter((r) => r.country && r.country !== 'BR' && r.country !== '??');
+  $('#countries').innerHTML = C.map((r) => `<span class="an-chip">${esc(NOME_PAIS(r.country))} <b>${big(r.n * kn)}</b></span>`).join('') || '<p class="an-note">Sem dados.</p>';
+  $('#countriesNote').textContent = cor.length ? `Visitas. ${cor.length} países no total.` : '';
 
   const G = groupOrgs(d.orgs || []);
   $('#orgs').innerHTML = G.map(([name, rows]) => `<div class="an-grp"><span class="gn">${esc(name)}</span><div class="an-chips">${rows.map((r) => `<span class="an-chip">${esc(r.org)} <b>${big(r.sinais * K)}</b> <small>visitas</small></span>`).join('')}</div></div>`).join('') || '<p class="an-note">Nenhuma rede de interesse identificada ainda.</p>';
 
-  const P = d.pages || [], pm = P.reduce((a, r) => a + +r.pageviews, 0) || 1;
+  const Pg = d.pages || [], pm = Pg.reduce((a, r) => a + +r.pageviews, 0) || 1;
   const PN = { home: 'Início', pesquisas: 'Pesquisas', apuracao: 'Apuração 2º turno', 'apuracao:1turno': 'Apuração 1º turno', analytics: 'Analytics' };
-  $('#pages').innerHTML = bars(P.map((r) => ({ k: PN[r.page] || r.page, v: +r.pageviews * K })), (v) => `${big(v)} <small>${pct(v / pm, 0)}</small>`);
+  $('#pages').innerHTML = bars(Pg.map((r) => ({ k: PN[r.page] || r.page, v: +r.pageviews * K })), (v) => `${big(v)} <small>${pct(v / pm, 0)}</small>`);
   const CL = d.clicks || [], CN = { pesquisas: 'Pesquisas eleitorais', apuracao: 'Apuração do 1º turno', compartilhar: 'Compartilhar' };
   $('#clicks').innerHTML = CL.length ? bars(CL.map((r) => ({ k: CN[r.label] || r.label, v: +r.n * K })), (v) => big(v)) : '<p class="an-note">Sem cliques ainda.</p>';
 }

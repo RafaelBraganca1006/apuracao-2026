@@ -1101,11 +1101,16 @@ function syncPollMode() {
 
 function updateScoreVar() { document.documentElement.style.setProperty('--score-b', Math.round($('#score').getBoundingClientRect().bottom) + 'px'); }
 new ResizeObserver(updateScoreVar).observe($('#score'));
-{ // celular: o placar tem versão resumida (só os dois percentuais), retrátil
-  const sc = $('#score'), tg = $('#scoreToggle');
-  const set = (min) => { sc.classList.toggle('min', min); tg.setAttribute('aria-expanded', String(!min)); };
+{ // celular: o placar tem versão resumida (só os dois percentuais), retrátil pela alça de baixo, igual ao painel de controles
+  const sc = $('#score'), g = $('#scoreGrab'); let y0 = null;
+  const set = (min) => { sc.classList.toggle('min', min); g.setAttribute('aria-expanded', String(!min)); };
   set(matchMedia('(max-width: 900px)').matches);
-  tg.addEventListener('click', () => set(!sc.classList.contains('min')));
+  g.addEventListener('pointerdown', (e) => { y0 = e.clientY; try { g.setPointerCapture(e.pointerId); } catch (err) { /* ponteiro sintético */ } });
+  g.addEventListener('pointerup', (e) => {
+    if (y0 == null) return;
+    const dy = e.clientY - y0; y0 = null;
+    if (dy < -18) set(true); else if (dy > 18) set(false); else set(!sc.classList.contains('min'));   // painel no topo: arrastar para cima recolhe
+  });
 }
 
 /* ================= render geral ================= */

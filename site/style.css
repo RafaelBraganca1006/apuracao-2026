@@ -579,11 +579,9 @@ body.og .soon-count { display: none; }
 .soon-cta { margin-top: var(--s4); align-self: flex-start; }
 .soon-cta svg { width: 15px; height: 15px; }
 
-.score-toggle { display: none; border: 0; cursor: pointer; padding: 4px 9px; background: var(--surface-hi-2); color: var(--text); }
-.score-toggle svg { width: 12px; height: 12px; transition: transform .3s var(--ease); }
-.score.min .score-toggle svg { transform: rotate(180deg); }
+.score-grab { display: none; }
 @media (max-width: 900px) {
-  .score-toggle { display: inline-flex; }
+  .score .score-grab { display: block; margin: 6px 0 -6px; }
   .score.min { padding-bottom: var(--s3); }
   .score.min .rank, .score.min .prog, .score.min .meta, .score.min .lead, .score.min .vt, .score.min .won,
   .score.min .soon-count, .score.min .soon-cta, .score.min .soon-sub { display: none; }

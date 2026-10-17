@@ -45,9 +45,9 @@ const THEMES = {
     ramp: [[-0.7,'#6ea3ff'],[-0.4,'#3f78ee'],[-0.2,'#2a53b8'],[-0.07,'#222f58'],[0,'#2a2e3c'],[0.07,'#4a2a3a'],[0.2,'#942a43'],[0.4,'#dc3b53'],[0.7,'#ff6377']],
     bubble: [[-0.5,'#7aadff'],[-0.2,'#4a82f2'],[-0.06,'#3a5fc0'],[0,'#8b92a3'],[0.06,'#d04a60'],[0.2,'#ef4560'],[0.5,'#ff6a7e']],
     leadBase: '#232733', leadK: [0.3, 0.55, 0.82, 1], leadKB: [0.5, 0.72, 0.9, 1],
-    munLine: ['#07090d', 0.5], ufLine: ['#ffffff', 0.28, 0.5], ink: '#ffffff', circleStroke: '#07090d',
-    lightI: 0.42, meta: '#07090d', muted: '#8b92a3',
-    canvas: { bg: '#07090d', text: '#eceef4', muted: '#8b92a3', soft: 'rgba(255,255,255,.6)', foot: 'rgba(255,255,255,.45)' },
+    munLine: ['#0b0b0c', 0.5], ufLine: ['#ffffff', 0.28, 0.5], ink: '#ffffff', circleStroke: '#0b0b0c',
+    lightI: 0.42, meta: '#0b0b0c', muted: '#8b92a3',
+    canvas: { bg: '#0b0b0c', text: '#eceef4', muted: '#8b92a3', soft: 'rgba(255,255,255,.6)', foot: 'rgba(255,255,255,.45)' },
   },
   light: {
     // paleta "mapa": vermelho/azul do Google Maps nos dados, cinza de terra como neutro
@@ -77,7 +77,7 @@ function useTheme(name) {
   let saved = null;
   try { saved = localStorage.getItem('theme'); } catch (e) { /* sem storage */ }
   const q = params.get('theme');
-  useTheme(q === 'light' || q === 'dark' ? q : saved || 'light');
+  useTheme(q === 'light' || q === 'dark' ? q : saved || 'dark');
 }
 const cand = (n) => ({ ...(CAND[n] || { short: String(n) }), color: T.cand[n] || T.fallback });
 

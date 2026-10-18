@@ -86,9 +86,10 @@ function chart(series) {
 const SRC_RE = [['twitch', /twitch\.tv/], ['kick', /kick\.com/], ['youtube', /youtube\.com|youtu\.be/], ['x', /(^|\.)(twitter\.com|x\.com|t\.co)$/], ['instagram', /instagram\.com/], ['reddit', /reddit\.com/], ['facebook', /facebook\.com|fb\.com/], ['tiktok', /tiktok\.com/], ['whatsapp', /whatsapp\.com|wa\.me/], ['telegram', /telegram\.org|t\.me/], ['google', /google\./], ['bing', /bing\.com/], ['linkedin', /linkedin\.com|lnkd\.in/]];
 const srcName = (s) => { s = String(s || ''); if (s === '$direct' || !s) return 'direto'; const l = s.toLowerCase(); for (const [n, re] of SRC_RE) if (l === n || re.test(l)) return n; return l.includes('.') ? 'outro' : l; };
 
+let SRC_PREF = 'auto'; try { SRC_PREF = localStorage.getItem('an_src') || 'auto'; } catch (e) { /* sem storage */ }
 function render(d) {
-  const P = d.ph || null, K = +(d.scale?.[0]?.k) || 1;              // PostHog (K = 1) quando configurado; senão o Cloudflare
-  const pick = (k) => (P && P[k]?.length ? [P[k], 1] : [d[k] || [], K]);
+  const P = SRC_PREF === 'cf' ? null : (d.ph || null), K = +(d.scale?.[0]?.k) || 1;              // PostHog (K = 1) quando configurado; senão o Cloudflare
+  const pick = (k) => (P && (SRC_PREF === 'ph' || P[k]?.length) ? [P[k] || [], 1] : [d[k] || [], K]);
   const [tt, kt] = pick('totals'), t = tt[0] || {}, [nowr] = pick('now'), [ser, ks] = pick('series');
   const peak = ser.reduce((m, p) => (+p.n * ks > (m?.n || 0) ? { t: p.t, n: +p.n * ks } : m), null);
   const fmtT = (x) => new Date(x).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
@@ -99,6 +100,8 @@ function render(d) {
        [nf((+d.tvs?.[0]?.n || 0) * K), 'TVs', 'navegadores de smart TV'], ['PostHog', 'tempo real e tempo de tela', 'configure POSTHOG_API_KEY para ver aqui']];
   $('#kpis').innerHTML = kpis.map(([n, l, s]) => `<div class="an-kpi"><b>${n}</b><span>${l}</span><small>${s}</small></div>`).join('');
   $('#chartTitle').textContent = P ? 'Pessoas ativas ao longo do tempo' : 'Visitas ao longo do tempo';
+  const noPh = SRC_PREF === 'ph' && !d.ph;
+  $('#srcNote').textContent = noPh ? 'PostHog não configurado (POSTHOG_API_KEY): mostrando Cloudflare.' : (P ? 'Fonte: PostHog (redes, TVs e cliques: Cloudflare).' : 'Fonte: Cloudflare.');
   chart(ser.map((p) => ({ t: p.t, n: (+p.n) * ks })));
 
   const [dvr, kd] = pick('devices'), dv = dvr.filter((r) => r.device !== 'tv'), o = ['mobile', 'desktop', 'tablet'];
@@ -151,11 +154,19 @@ async function load() {
     }
     $('#login').hidden = true; $('#dash').hidden = false; err.textContent = '';
     $('#anSub').textContent = DEMO ? 'Dados de demonstração (?demo). Nada disso é real.' : `Atualizado às ${new Date().toLocaleTimeString('pt-BR')} · últimas ${hours >= 48 ? Math.round(hours / 24) + ' dias' : hours + ' horas'}.`;
-    render(data);
+    lastData = data; render(data);
     if (data.errors?.length) { err.textContent = `Algumas seções não carregaram: ${data.errors.join(' | ')}`; }
   } catch (e) { $('#login').hidden = DEMO; err.textContent = `Não foi possível carregar (${e.message}).`; }
 }
 $('#login').addEventListener('submit', (e) => { e.preventDefault(); localStorage.setItem('stats_token', $('#tok').value.trim()); load(); });
+let lastData = null;
+$('#src').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  SRC_PREF = b.dataset.s; try { localStorage.setItem('an_src', SRC_PREF); } catch (err) { /* sem storage */ }
+  document.querySelectorAll('#src button').forEach((x) => x.classList.toggle('on', x === b));
+  if (lastData) render(lastData);
+});
+document.querySelectorAll('#src button').forEach((x) => x.classList.toggle('on', x.dataset.s === SRC_PREF));
 $('#hours').addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b) return;
   hours = +b.dataset.h; document.querySelectorAll('#hours button').forEach((x) => x.classList.toggle('on', x === b)); load();

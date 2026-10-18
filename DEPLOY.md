@@ -76,6 +76,15 @@ caffeinate -i python3 collector/collect.py --election 6258 \
   --after "collector/publish_live.sh"
 ```
 
+Em paralelo (outro terminal), o 2º turno de governador (AC, AM, DF, ES, RN, TO), que gera `data-worker/public/gov2.json`:
+
+```bash
+caffeinate -i python3 collector/cargos.py --cargo governador --turno 2 --out data-worker/public --loop 45 --after "collector/publish_live.sh"
+```
+
+Antes de 25/10 rode uma vez (sem `--loop`) e publique (`collector/publish_live.sh`) para a página mostrar "Aguardando" em vez de "começa em 25/10".
+Os dados dos outros cargos no 1º turno são fixos e já vão no site (`site/data/gov1/`, `sen1/`, `depfed1/`, `depest1/`).
+
 Teste antes com o 1º turno ou um `live.json` qualquer: rode `collector/publish_live.sh` e abra `https://SEU_SITE/data/live.json`.
 (Com R2: troque o `--after` por `collector/upload_r2.sh apuracao-dados`.)
 

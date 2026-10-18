@@ -1,0 +1,7 @@
+[tool.ruff]
+line-length = 140
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+ignore = ["E402", "E701", "E702", "E731"]   # coletor: sys.path antes dos imports; one-liners deliberados

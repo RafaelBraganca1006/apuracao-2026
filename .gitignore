@@ -2,6 +2,7 @@
 site/data/live.json
 site/data/history.json
 site/data/snaps/
+site/data/gov2.json
 
 # ambiente local
 .claude/
@@ -16,3 +17,6 @@ node_modules/
 data-worker/public/live.json
 data-worker/public/history.json
 data-worker/public/snaps/
+data-worker/public/gov2.json
+.pytest_cache/
+.ruff_cache/

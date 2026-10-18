@@ -5,9 +5,13 @@ Lula = vermelho, Flávio Bolsonaro = azul.
 
 ```
 collector/collect.py   busca o TSE e gera site/data/live.json (um único arquivo, ~290 KB / 86 KB gzip)
+collector/cargos.py    governador, senador, deputado federal/estadual (1º turno e 2º turno de governador) → site/data/{gov1,sen1,depfed1,depest1}/
+collector/tse.py       cliente do portal do TSE (usado por cargos.py)
 collector/geo.py       (já rodado) gera a malha simplificada a partir do IBGE
 collector/serve.js     servidor local de teste
-site/                  o site estático (index.html, app.js, style.css, data/, vendor/, img/)
+site/                  o site estático: index.html, apuracao.html (presidente), cargo.html (demais cargos), data/, vendor/, img/
+tests/                 testes do coletor e conferência dos dados (python3 -m unittest discover -s tests)
+docs/                  dados.md (formato dos arquivos), plano-cargos.md (plano e decisões)
 ```
 
 ## Ver agora (antes do 2º turno)
@@ -93,3 +97,19 @@ python3 collector/pesquisas.py --out site/data/pesquisas.json   # rode de novo p
 ```
 
 Fonte: tabelas da Wikipedia ("Opinion polling for the 2026 Brazilian presidential election"), que cita a matéria original de cada pesquisa (Datafolha, Quaest, AtlasIntel, Nexus/BTG, Futura, PoderData, MDA, Paraná Pesquisas, Veritá, etc.). Conferi uma amostra contra a imprensa. Quando a apuração começa (`live.json` com votos), a tela troca sozinha para o placar ao vivo.
+
+## Governador, senador e deputados (`cargo.html`)
+
+Mesmo visual do presidente, com seletor de cargo (Governador · Senador · Dep. Federal · Dep. Estadual), de turno (governador) e de estado. `?c=senador&uf=SP&mode=3d` abre direto.
+Visão do Brasil: estados coloridos pelo partido do mais votado (ou com mais cadeiras). Visão do estado: municípios coloridos; nos deputados, também o mapa de votos de um candidato.
+
+```bash
+# 1º turno (resultado final; roda uma vez, ~2 min por cargo) e fotos dos candidatos majoritários
+for c in governador senador dep_federal dep_estadual; do python3 collector/cargos.py --cargo $c --turno 1 --out site/data --photos site/img; done
+python3 collector/nomes.py        # índice de nomes dos municípios (busca)
+
+# 2º turno de governador ao vivo (AC, AM, DF, ES, RN, TO) em 25/10, junto com o coletor do presidente
+caffeinate -i python3 collector/cargos.py --cargo governador --turno 2 --out data-worker/public --loop 45 --after "collector/publish_live.sh"
+```
+
+Formato dos arquivos: [docs/dados.md](docs/dados.md). Conferência: `python3 -m unittest discover -s tests`.

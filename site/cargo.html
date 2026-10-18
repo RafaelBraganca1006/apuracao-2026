@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0c">
+<title>Governadores, senadores e deputados · Eleição 2026</title>
+<meta name="description" content="Resultado de governador, senador, deputado federal e deputado estadual, estado por estado e município a município, com dados oficiais do TSE.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Eleição 2026">
+<meta property="og:title" content="Governadores, senadores e deputados · Eleição 2026">
+<meta property="og:description" content="Resultado estado por estado e município a município, com dados oficiais do TSE.">
+<meta property="og:url" content="https://apuracao-2026.rbranganca.workers.dev/cargo">
+<meta property="og:image" content="https://apuracao-2026.rbranganca.workers.dev/og.jpg?v=2">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://apuracao-2026.rbranganca.workers.dev/og.jpg?v=2">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%2307090d%27/%3E%3Cpath d=%27M4 16h12v12H4z%27 fill=%27%23ff4a5c%27/%3E%3Cpath d=%27M16 4h12v12H16z%27 fill=%27%234d8dff%27/%3E%3C/svg%3E">
+<script>try{var t=new URLSearchParams(location.search).get('theme')||localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}</script>
+<link rel="preload" href="fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Petrona:ital,wght@0,300..700;1,300..700&display=swap">
+<link rel="stylesheet" href="vendor/maplibre-gl.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="cargo.css">
+</head>
+<body>
+<div id="map" role="img" aria-label="Mapa do Brasil colorido pelo candidato ou partido à frente"></div>
+
+<section class="panel score" id="score" aria-live="polite">
+  <div class="score-top">
+    <div class="eyebrow" id="eyebrow">Governador · 1º turno</div>
+    <div class="badges">
+      <a class="pill homelink" href="apuracao.html" aria-label="Ver a apuração de presidente"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5"/></svg><span>Presidente</span></a>
+      <div class="pill" id="pill" data-s="done"><i></i><span>Resultado final</span></div>
+    </div>
+  </div>
+  <div id="scoreBody"></div>
+  <div class="grab score-grab" id="scoreGrab" role="separator" tabindex="0" aria-label="Arraste para cima para recolher e para baixo para expandir"></div>
+</section>
+
+<aside class="panel side" id="side">
+  <div class="side-grab" id="sideGrab">
+    <div class="side-head">
+      <div class="side-title">
+        <button class="back" id="sideBack" type="button" hidden aria-label="Voltar para a lista de estados"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5"/></svg></button>
+        <h2 id="sideTitle">Estados</h2>
+      </div>
+      <div class="seg small" id="sortSeg" role="group" aria-label="Ordenar">
+        <i class="thumb"></i>
+        <button data-sort="margin" class="on">Margem</button>
+        <button data-sort="az">A–Z</button>
+      </div>
+      <button class="x" id="sideClose" aria-label="Fechar">×</button>
+    </div>
+  </div>
+  <ul id="ufList"></ul>
+  <div class="detail" id="detail" hidden></div>
+</aside>
+<div class="scrim" id="scrim"></div>
+
+<div class="search" id="search" role="search">
+  <svg class="mag" viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M13 13l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+  <input id="q" type="text" inputmode="search" placeholder="Buscar cidade ou estado…" autocomplete="off" autocapitalize="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="sres" aria-label="Buscar cidade ou estado">
+  <button class="clr" id="qclear" type="button" aria-label="Limpar busca" hidden>×</button>
+  <button class="theme-btn" id="themeBtn" type="button" aria-label="Alternar tema claro e escuro" title="Tema claro / escuro">
+    <svg class="sun" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="3.6"/><path d="M10 2.2v1.8M10 16v1.8M2.2 10H4M16 10h1.8M4.5 4.5l1.3 1.3M14.2 14.2l1.3 1.3M15.5 4.5l-1.3 1.3M5.8 14.2l-1.3 1.3"/></svg>
+    <svg class="moon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M16.5 11.6A6.8 6.8 0 0 1 8.4 3.5a6.8 6.8 0 1 0 8.1 8.1z"/></svg>
+  </button>
+  <ul id="sres" role="listbox" hidden></ul>
+</div>
+
+<div class="pin" id="pin" hidden>
+  <button class="x" id="pinClose" type="button" aria-label="Fechar">×</button>
+  <div id="pinBody"></div>
+</div>
+
+<section class="panel controls" id="controls">
+  <div class="grab" id="ctlGrab" role="separator" tabindex="0" aria-label="Arraste para baixo para recolher e para cima para expandir"></div>
+  <div class="ctl-row r-cargo">
+    <div class="seg" id="cargoSeg" role="group" aria-label="Cargo">
+      <i class="thumb"></i>
+      <button data-cargo="governador" class="on"><span class="lg">Governador</span><span class="sm">Gov.</span></button>
+      <button data-cargo="senador"><span class="lg">Senador</span><span class="sm">Sen.</span></button>
+      <button data-cargo="dep_federal"><span class="lg">Dep. Federal</span><span class="sm">Federal</span></button>
+      <button data-cargo="dep_estadual"><span class="lg">Dep. Estadual</span><span class="sm">Estadual</span></button>
+    </div>
+  </div>
+  <div class="ctl-row r-opts">
+    <div class="seg" id="turnoSeg" role="group" aria-label="Turno">
+      <i class="thumb"></i>
+      <button data-turno="1" class="on">1º turno</button>
+      <button data-turno="2">2º turno</button>
+    </div>
+    <div class="seg" id="viewSeg" role="group" aria-label="Colorir por" hidden>
+      <i class="thumb"></i>
+      <button data-view="party" class="on">Partidos</button>
+      <button data-view="cand">Candidato</button>
+    </div>
+    <div class="seg" id="modeSeg" role="group" aria-label="Visualização">
+      <i class="thumb"></i>
+      <button data-mode="map" class="on" aria-label="Mapa"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 3.5 5.5 2l5 1.5 4-1.5v10.5L10.5 14l-5-1.5-4 1.5z"/><path d="M5.5 2v10.5M10.5 3.5V14"/></svg><span>Mapa</span></button>
+      <button data-mode="3d" aria-label="3D"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5 14 5v6L8 14.5 2 11V5z"/><path d="M2 5l6 3.5L14 5M8 8.5v6"/></svg><span>3D</span></button>
+    </div>
+  </div>
+  <div class="ctl-extra" id="ctlExtra"><div class="ctl-extra-in">
+    <div class="legend r1" id="legend"></div>
+  </div></div>
+  <div class="ctl-row actions">
+    <button class="btn" id="btnStates" aria-label="Lista de estados"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h11M2.5 8h11M2.5 12h7"/></svg><span>Estados</span></button>
+    <button class="btn primary" id="btnShare" data-ev="compartilhar" aria-label="Compartilhar"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10V2M5 4.5 8 1.5l3 3M3 8v5.5h10V8"/></svg><span>Compartilhar</span></button>
+  </div>
+</section>
+
+<div class="loading" id="loading"><div class="mark"></div><span>Carregando resultados</span></div>
+<div class="tip" id="tip" hidden></div>
+
+<footer class="foot">
+  Fonte: <a href="https://resultados.tse.jus.br" target="_blank" rel="noopener">TSE</a> · malha IBGE · não oficial
+</footer>
+
+<dialog id="shareDlg">
+  <form method="dialog" class="dlg">
+    <button class="x" value="close" aria-label="Fechar">×</button>
+    <h3>Compartilhar</h3>
+    <img id="sharePrev" alt="Prévia da imagem para compartilhar">
+    <div class="dlg-actions">
+      <a class="btn primary" id="shareDl" download="resultado.png">Baixar imagem</a>
+      <a class="btn" id="shareX" target="_blank" rel="noopener">Postar no X</a>
+      <button class="btn" id="shareCopy" type="button">Copiar link</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="vendor/maplibre-gl.js"></script>
+<script src="posthog-config.js"></script>
+<script src="posthog.js"></script>
+<script src="config.js"></script>
+<script src="shared.js"></script>
+<script src="cargo.js"></script>
+<script src="beacon.js" defer></script>
+</body>
+</html>

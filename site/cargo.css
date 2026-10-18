@@ -82,7 +82,8 @@
   .hemi { margin: 0 var(--s4); }
   .hemi-c .pc { font-size: calc(30px * var(--num-k)); }
   .hemi-sub { margin-top: 4px; font-size: 12px; }
-  .score.min .hemi-sub { display: none; }
+  .score.min .hemi-sub { margin-top: 2px; font-size: 11.5px; }
+  .score.min .lead { display: block; margin-top: 4px; font-size: 11.5px; min-height: 0; }
   .score.min .hemi { margin: 0 auto; width: 190px; }
   .score.min .hemi-c .pc { font-size: calc(26px * var(--num-k)); }
   .sum { gap: var(--s3); }

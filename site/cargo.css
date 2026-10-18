@@ -39,7 +39,6 @@
 @keyframes dot { from { opacity: 0; transform: scale(.2); transform-box: fill-box; transform-origin: center; } }
 .hemi-c { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; }
 .hemi-c .pc { justify-content: center; margin: 0; color: var(--text); }
-.hemi-c .cap { display: block; margin-top: 4px; font-size: 12.5px; color: var(--muted); }
 .hemi-sub { margin-top: var(--s2); text-align: center; font-size: 12.5px; color: var(--text-2); }
 .pbar { display: flex; height: 8px; border-radius: 99px; overflow: hidden; margin-top: var(--s4); background: var(--neutral); gap: 1px; }
 .pbar i { display: block; height: 100%; min-width: 2px; transition: flex-grow .8s var(--ease); }
@@ -82,9 +81,8 @@
   .cand.k1 .ph.blank, .cand.k2 .ph.blank { font-size: 12px; }
   .hemi { margin: 0 var(--s4); }
   .hemi-c .pc { font-size: calc(30px * var(--num-k)); }
-  .hemi-c .cap { font-size: 11.5px; margin-top: 2px; }
   .hemi-sub { margin-top: 4px; font-size: 12px; }
-  .score.min .hemi-sub, .score.min .hemi-c .cap { display: none; }
+  .score.min .hemi-sub { display: none; }
   .score.min .hemi { margin: 0 auto; width: 190px; }
   .score.min .hemi-c .pc { font-size: calc(26px * var(--num-k)); }
   .sum { gap: var(--s3); }

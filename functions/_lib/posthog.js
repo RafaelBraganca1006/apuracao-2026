@@ -5,18 +5,13 @@ const DEFAULT_PROJECT = '217733', DEFAULT_HOST = 'https://eu.posthog.com';
 export function hogql(hours) {
   const H = Math.min(720, Math.max(1, Math.round(+hours) || 48));
   const W = `timestamp > now() - INTERVAL ${H} HOUR`;
-  // uma linha por sessão, com a duração da sessão: base para visitas, tempo de tela, aparelho e estado
-  const S = `SELECT properties.$session_id AS sid, max(session.$session_duration) AS dur, any(properties.$device_type) AS dev, any(properties.$geoip_country_code) AS c, any(properties.$geoip_subdivision_1_code) AS uf FROM events WHERE event = '$pageview' AND ${W} GROUP BY sid`;
+  const LIVE = "event IN ('$pageview', 'viewing')";       // 'viewing' = batimento enviado a cada 60 s com a aba visível (site/posthog.js)
   return {
+    first: "SELECT min(timestamp) AS t FROM events WHERE event IN ('$pageview', 'viewing')",
     totals: `SELECT count() AS pageviews, uniq(distinct_id) AS uniques, uniq(properties.$session_id) AS visits FROM events WHERE event = '$pageview' AND ${W}`,
-    secs: `SELECT sum(dur) AS secs FROM (${S})`,
-    now: `SELECT uniq(distinct_id) AS n FROM events WHERE event IN ('$pageview', '$pageleave') AND timestamp > now() - INTERVAL 5 MINUTE`,
-    series: `SELECT toStartOfInterval(timestamp, INTERVAL 5 MINUTE) AS t, uniq(distinct_id) AS n FROM events WHERE event IN ('$pageview', '$pageleave') AND ${W} GROUP BY t ORDER BY t`,
-    devices: `SELECT dev AS device, count() AS visits, sum(dur) AS secs FROM (${S}) GROUP BY dev`,
-    states: `SELECT uf, count() AS n, sum(dur) AS secs FROM (${S}) WHERE c = 'BR' AND uf != '' GROUP BY uf ORDER BY secs DESC LIMIT 30`,
-    cities: `SELECT properties.$geoip_city_name AS city, any(properties.$geoip_subdivision_1_code) AS uf, uniq(distinct_id) AS n FROM events WHERE event = '$pageview' AND ${W} AND properties.$geoip_country_code = 'BR' AND properties.$geoip_city_name != '' GROUP BY city ORDER BY n DESC LIMIT 24`,
-    countries: `SELECT properties.$geoip_country_code AS country, uniq(distinct_id) AS n FROM events WHERE event = '$pageview' AND ${W} GROUP BY country ORDER BY n DESC LIMIT 24`,
-    sources: `SELECT coalesce(nullIf(properties.utm_source, ''), nullIf(properties.$referring_domain, ''), '$direct') AS source, uniq(properties.$session_id) AS n FROM events WHERE event = '$pageview' AND ${W} GROUP BY source ORDER BY n DESC LIMIT 20`,
+    secs: `SELECT sum(dur) AS secs FROM (SELECT properties.$session_id AS sid, max(session.$session_duration) AS dur FROM events WHERE ${LIVE} AND ${W} GROUP BY sid)`,
+    now: `SELECT uniq(distinct_id) AS n FROM events WHERE ${LIVE} AND timestamp > now() - INTERVAL 3 MINUTE`,
+    series: `SELECT toStartOfInterval(timestamp, INTERVAL 2 MINUTE) AS t, uniq(distinct_id) AS n FROM events WHERE ${LIVE} AND ${W} GROUP BY t ORDER BY t`,
   };
 }
 
@@ -35,7 +30,5 @@ export async function fromPostHog(env, hours) {
   }));
   const out = {}, errors = [];
   keys.forEach((k, i) => { if (res[i].status === 'fulfilled') out[k] = res[i].value; else { out[k] = []; errors.push(`posthog.${k}: ${String(res[i].reason?.message || res[i].reason).slice(0, 200)}`); } });
-  // junta "totals" e "secs" no formato que o painel espera
-  out.totals = [{ ...(out.totals?.[0] || {}), secs: +out.secs?.[0]?.secs || 0 }]; delete out.secs;
   return { data: out, errors };
 }

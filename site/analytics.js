@@ -35,15 +35,9 @@ function groupOrgs(rows) {
 
 /* ---------- dados ---------- */
 function demo(h) {
-  const d = demoCF(h);
-  if (q.get('demo') !== 'ph') return d;
-  const secsPer = (n) => Math.round(n * 1900);
-  d.ph = {
-    totals: d.totals, now: [{ n: 2854 }], series: d.series,
-    devices: d.devices.map((r) => ({ ...r, device: { mobile: 'Mobile', desktop: 'Desktop', tablet: 'Tablet', tv: 'Tablet' }[r.device] })),
-    states: d.states.map((r) => ({ uf: r.uf, n: r.n, secs: secsPer(r.n) })), cities: d.cities, countries: d.countries,
-    sources: [['$direct', 52], ['t.co', 21], ['wa.me', 9], ['m.youtube.com', 6], ['instagram', 4], ['twitch.tv', 3]].map(([source, n]) => ({ source, n: n * 1000 })),
-  };
+  const d = demoCF(h), t = d.totals[0];
+  d.unified = { now: 2854, peak: { t: d.series[Math.round(d.series.length * 0.72)].t, n: 8120 }, series: d.series.map((p) => ({ t: p.t, n: +p.n })),
+    uniques: Math.round(+t.uniques), visits: Math.round(+t.visits), pageviews: Math.round(+t.pageviews), secs: Math.round(+t.secs), cutoff: '2026-10-17 21:43:00', posthog: q.get('demo') !== 'cf' };
   return d;
 }
 function demoCF(h) {
@@ -86,54 +80,48 @@ function chart(series) {
 const SRC_RE = [['twitch', /twitch\.tv/], ['kick', /kick\.com/], ['youtube', /youtube\.com|youtu\.be/], ['x', /(^|\.)(twitter\.com|x\.com|t\.co)$/], ['instagram', /instagram\.com/], ['reddit', /reddit\.com/], ['facebook', /facebook\.com|fb\.com/], ['tiktok', /tiktok\.com/], ['whatsapp', /whatsapp\.com|wa\.me/], ['telegram', /telegram\.org|t\.me/], ['google', /google\./], ['bing', /bing\.com/], ['linkedin', /linkedin\.com|lnkd\.in/]];
 const srcName = (s) => { s = String(s || ''); if (s === '$direct' || !s) return 'direto'; const l = s.toLowerCase(); for (const [n, re] of SRC_RE) if (l === n || re.test(l)) return n; return l.includes('.') ? 'outro' : l; };
 
-let SRC_PREF = 'auto'; try { SRC_PREF = localStorage.getItem('an_src') || 'auto'; } catch (e) { /* sem storage */ }
+// origem do tráfego: o coletor já classifica (twitch, x, whatsapp...); aqui só os nomes
 function render(d) {
-  const P = SRC_PREF === 'cf' ? null : (d.ph || null), K = +(d.scale?.[0]?.k) || 1;              // PostHog (K = 1) quando configurado; senão o Cloudflare
-  const pick = (k) => (P && (SRC_PREF === 'ph' || P[k]?.length) ? [P[k] || [], 1] : [d[k] || [], K]);
-  const [tt, kt] = pick('totals'), t = tt[0] || {}, [nowr] = pick('now'), [ser, ks] = pick('series');
-  const peak = ser.reduce((m, p) => (+p.n * ks > (m?.n || 0) ? { t: p.t, n: +p.n * ks } : m), null);
-  const fmtT = (x) => new Date(x).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
-  const kpis = P
-    ? [[nf(nowr[0]?.n), 'agora', 'pessoas ativas nos últimos 5 min'], [big(peak?.n), 'pessoas ao mesmo tempo', peak ? `pico em ${fmtT(peak.t)}` : 'pico no período'],
-       [big(t.uniques), 'pessoas diferentes', 'navegadores únicos'], [big(t.visits), 'visitas', `${big(t.pageviews)} páginas vistas`], [dur(+t.secs || 0), 'de tela aberta', 'soma da duração das sessões']]
-    : [[big((+t.visits || 0) * kt), 'visitas', 'sessões distintas'], [big((+t.uniques || 0) * kt), 'pessoas diferentes', 'navegadores únicos'], [big((+t.pageviews || 0) * kt), 'páginas vistas', K > 1 ? `amostra 1 em ${K}` : 'Cloudflare'],
-       [nf((+d.tvs?.[0]?.n || 0) * K), 'TVs', 'navegadores de smart TV'], ['PostHog', 'tempo real e tempo de tela', 'configure POSTHOG_API_KEY para ver aqui']];
-  $('#kpis').innerHTML = kpis.map(([n, l, s]) => `<div class="an-kpi"><b>${n}</b><span>${l}</span><small>${s}</small></div>`).join('');
-  $('#chartTitle').textContent = P ? 'Pessoas ativas ao longo do tempo' : 'Visitas ao longo do tempo';
-  const noPh = SRC_PREF === 'ph' && !d.ph;
-  $('#srcNote').textContent = noPh ? 'PostHog não configurado (POSTHOG_API_KEY): mostrando Cloudflare.' : (P ? 'Fonte: PostHog (redes, TVs e cliques: Cloudflare).' : 'Fonte: Cloudflare.');
-  chart(ser.map((p) => ({ t: p.t, n: (+p.n) * ks })));
+  const U = d.unified || {}, fmtT = (x) => new Date(x).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+  const perVisit = U.visits ? (U.secs || 0) / U.visits : 0;
+  const key = [
+    [nf(U.now), 'vendo agora', 'pessoas ativas nos últimos 3 min', 'live'],
+    [big(U.peak?.n), 'máximo ao mesmo tempo', U.peak ? `pico em ${fmtT(U.peak.t)}` : 'sem dados ainda'],
+    [big(U.uniques), 'pessoas diferentes', 'navegadores únicos'],
+    [big(U.visits), 'visitas', 'sessões distintas'],
+  ];
+  const minor = [
+    [big(U.pageviews), 'páginas vistas'], [dur(U.secs || 0), 'de tela aberta'], [perVisit ? dur(perVisit) : '–', 'por visita'], [nf(+d.tvs?.[0]?.n || 0), 'TVs'],
+  ];
+  $('#kpis').innerHTML = key.map(([n, l, s, c]) => `<div class="an-kpi key ${c || ''}"><b>${n}</b><span>${l}</span><small>${s}</small></div>`).join('')
+    + `<div class="an-minor">${minor.map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join('')}</div>`;
+  $('#srcNote').textContent = U.posthog
+    ? `Soma Cloudflare (desde o início) + PostHog${U.cutoff ? ` (desde ${fmtT(String(U.cutoff).replace(' ', 'T') + 'Z')})` : ''}. Contagens: o maior das duas fontes, sem contar duas vezes. Presença e tempo de tela: Cloudflare antes do PostHog, PostHog depois.`
+    : 'Só Cloudflare (PostHog não configurado: faltam presença atual e tempo de tela recentes).';
+  chart(U.series || []);
 
-  const [dvr, kd] = pick('devices'), dv = dvr.filter((r) => r.device !== 'tv'), o = ['mobile', 'desktop', 'tablet'];
-  const vt = dv.reduce((a, r) => a + +r.visits, 0) || 1, st = dv.reduce((a, r) => a + +r.secs, 0) || 0;
-  const norm = (r) => (r.device === 'Mobile' ? 'mobile' : r.device === 'Desktop' ? 'desktop' : r.device === 'Tablet' ? 'tablet' : String(r.device || '').toLowerCase());
-  dv.forEach((r) => { r.device = norm(r); });
+  const dv = (d.devices || []).filter((r) => r.device !== 'tv'), vt = dv.reduce((a, r) => a + +r.visits, 0) || 1, o = ['mobile', 'desktop', 'tablet'];
   dv.sort((x, y) => o.indexOf(x.device) - o.indexOf(y.device));
-  $('#devices').innerHTML = `<h3>Visitas</h3>${bars(dv.map((r) => ({ k: DEV[r.device] || r.device, v: +r.visits })), (v) => pct(v / vt))}` + (st ? `<h3>Tempo de tela</h3>${bars(dv.map((r) => ({ k: DEV[r.device] || r.device, v: +r.secs })), (v) => pct(v / st))}` : '');
-  $('#tvs').innerHTML = `<div class="an-two-nums"><div><b>${nf((+d.tvs?.[0]?.n || 0) * K)}</b><span>TVs</span><small>navegadores de smart TV (Cloudflare)</small></div></div>`;
-  const [Sr] = pick('sources'), S = Sr.map((r) => ({ source: srcName(r.source), n: +r.n })), sm = S.reduce((a, r) => a + r.n, 0) || 1, mS = new Map();
-  S.forEach((r) => mS.set(r.source, (mS.get(r.source) || 0) + r.n));
-  $('#sources').innerHTML = [...mS].sort((x, y) => y[1] - x[1]).map(([s, n]) => `<span class="an-chip">${esc(SRC[s] || s)} <b>${pct(n / sm, 0)}</b></span>`).join('');
+  $('#devices').innerHTML = bars(dv.map((r) => ({ k: DEV[r.device] || r.device, v: +r.visits })), (v) => pct(v / vt));
+  $('#tvs').innerHTML = `<div class="an-two-nums"><div><b>${nf(+d.tvs?.[0]?.n || 0)}</b><span>TVs</span><small>navegadores de smart TV</small></div></div>`;
+  const S = d.sources || [], sm = S.reduce((a, r) => a + +r.n, 0) || 1;
+  $('#sources').innerHTML = S.map((r) => `<span class="an-chip">${esc(SRC[r.source] || r.source)} <b>${pct(+r.n / sm, 0)}</b></span>`).join('');
 
-  const [stR, kst] = pick('states'), byTime = P && stR.some((r) => +r.secs > 0);
-  const sts = stR.map((r) => ({ uf: r.uf, v: byTime ? +r.secs : +r.n * kst })).sort((x, y) => y.v - x.v), tot = sts.reduce((a, r) => a + r.v, 0) || 1, mm = Math.max(...sts.map((r) => r.v), 1);
-  $('#statesTitle').textContent = byTime ? 'Tempo de tela por estado' : 'Visitas por estado';
+  const sts = (d.states || []).map((r) => ({ uf: r.uf, v: +r.n })), tot = sts.reduce((a, r) => a + r.v, 0) || 1, mm = Math.max(...sts.map((r) => r.v), 1);
   $('#states').innerHTML = sts.map((r) => `<div class="row"><span class="uf">${esc(r.uf)}</span><span class="b"><i style="width:${(r.v / mm) * 100}%"></i></span><span class="v">${pct(r.v / tot)}</span></div>`).join('') || '<p class="an-note">Sem dados.</p>';
-
-  const [cir, kc] = pick('cities');
-  $('#cities').innerHTML = cir.map((r) => `<span class="an-chip">${esc(r.city)} <small>${esc(r.uf)}</small> <b>${big(r.n * kc)}</b></span>`).join('') || '<p class="an-note">Sem dados.</p>';
-  const [cor, kn] = pick('countries'), C = cor.filter((r) => r.country && r.country !== 'BR' && r.country !== '??');
-  $('#countries').innerHTML = C.map((r) => `<span class="an-chip">${esc(NOME_PAIS(r.country))} <b>${big(r.n * kn)}</b></span>`).join('') || '<p class="an-note">Sem dados.</p>';
+  $('#cities').innerHTML = (d.cities || []).map((r) => `<span class="an-chip">${esc(r.city)} <small>${esc(r.uf)}</small> <b>${big(+r.n)}</b></span>`).join('') || '<p class="an-note">Sem dados.</p>';
+  const cor = d.countries || [], C = cor.filter((r) => r.country && r.country !== 'BR' && r.country !== '??');
+  $('#countries').innerHTML = C.map((r) => `<span class="an-chip">${esc(NOME_PAIS(r.country))} <b>${big(+r.n)}</b></span>`).join('') || '<p class="an-note">Sem dados.</p>';
   $('#countriesNote').textContent = cor.length ? `Visitas. ${cor.length} países no total.` : '';
 
   const G = groupOrgs(d.orgs || []);
-  $('#orgs').innerHTML = G.map(([name, rows]) => `<div class="an-grp"><span class="gn">${esc(name)}</span><div class="an-chips">${rows.map((r) => `<span class="an-chip">${esc(r.org)} <b>${big(r.sinais * K)}</b> <small>visitas</small></span>`).join('')}</div></div>`).join('') || '<p class="an-note">Nenhuma rede de interesse identificada ainda.</p>';
+  $('#orgs').innerHTML = G.map(([name, rows]) => `<div class="an-grp"><span class="gn">${esc(name)}</span><div class="an-chips">${rows.map((r) => `<span class="an-chip">${esc(r.org)} <b>${big(+r.sinais)}</b> <small>visitas</small></span>`).join('')}</div></div>`).join('') || '<p class="an-note">Nenhuma rede de interesse identificada ainda.</p>';
 
   const Pg = d.pages || [], pm = Pg.reduce((a, r) => a + +r.pageviews, 0) || 1;
   const PN = { home: 'Início', pesquisas: 'Pesquisas', apuracao: 'Apuração 2º turno', 'apuracao:1turno': 'Apuração 1º turno', analytics: 'Analytics' };
-  $('#pages').innerHTML = bars(Pg.map((r) => ({ k: PN[r.page] || r.page, v: +r.pageviews * K })), (v) => `${big(v)} <small>${pct(v / pm, 0)}</small>`);
+  $('#pages').innerHTML = bars(Pg.map((r) => ({ k: PN[r.page] || r.page, v: +r.pageviews })), (v) => `${big(v)} <small>${pct(v / pm, 0)}</small>`);
   const CL = d.clicks || [], CN = { pesquisas: 'Pesquisas eleitorais', apuracao: 'Apuração do 1º turno', compartilhar: 'Compartilhar' };
-  $('#clicks').innerHTML = CL.length ? bars(CL.map((r) => ({ k: CN[r.label] || r.label, v: +r.n * K })), (v) => big(v)) : '<p class="an-note">Sem cliques ainda.</p>';
+  $('#clicks').innerHTML = CL.length ? bars(CL.map((r) => ({ k: CN[r.label] || r.label, v: +r.n })), (v) => big(v)) : '<p class="an-note">Sem cliques ainda.</p>';
 }
 
 /* ---------- carregar ---------- */
@@ -160,13 +148,6 @@ async function load() {
 }
 $('#login').addEventListener('submit', (e) => { e.preventDefault(); localStorage.setItem('stats_token', $('#tok').value.trim()); load(); });
 let lastData = null;
-$('#src').addEventListener('click', (e) => {
-  const b = e.target.closest('button'); if (!b) return;
-  SRC_PREF = b.dataset.s; try { localStorage.setItem('an_src', SRC_PREF); } catch (err) { /* sem storage */ }
-  document.querySelectorAll('#src button').forEach((x) => x.classList.toggle('on', x === b));
-  if (lastData) render(lastData);
-});
-document.querySelectorAll('#src button').forEach((x) => x.classList.toggle('on', x.dataset.s === SRC_PREF));
 $('#hours').addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b) return;
   hours = +b.dataset.h; document.querySelectorAll('#hours button').forEach((x) => x.classList.toggle('on', x === b)); load();

@@ -28,4 +28,8 @@
     person_profiles: 'identified_only',
     persistence: 'localStorage',
   });
+
+  // Batimento a cada 60 s com a aba visível: é o que permite saber quantas pessoas estão ao mesmo tempo (máx. 4 h por navegador).
+  let beats = 0;
+  setInterval(() => { if (document.visibilityState === 'visible' && beats < 240) { beats++; window.posthog.capture('viewing'); } }, 60000);
 })();

@@ -82,7 +82,9 @@ Teste antes com o 1º turno ou um `live.json` qualquer: rode `collector/publish_
 ## 5. Antes de divulgar
 
 - `site/index.html`, `pesquisas.html` e `apuracao.html`: troque `og:image` por URL absoluta
-  (`https://seudominio.com/og.png`). O X/Twitter exige URL absoluta.
+  (`https://seudominio.com/og.jpg?v=2`). O X/Twitter e o WhatsApp exigem URL absoluta. A imagem é gerada por
+  `NOWAIT=1 FORMAT=jpeg ... node collector/shot.js` (veja o início do arquivo); o WhatsApp guarda a prévia de cada link, então
+  para ver a nova imagem compartilhe o link com `?v=2` (ou outro valor) no final.
 - Analytics: Cloudflare → Web Analytics → Add site; cole o snippet antes de `</body>` nas três páginas.
 - Fonte Petrona: hoje vem do Google Fonts (`<link>` nas páginas). Para hospedar no próprio site,
   baixe o `.woff2` para `site/fonts/` e troque o `<link>` por um `@font-face`.
@@ -120,3 +122,13 @@ Observações:
 - Cidade pode ser imprecisa em 4G (costuma acertar o estado). Links em apps de celular muitas vezes não mandam referrer: use
   `?utm_source=whatsapp` (ou `x`, `instagram`, `twitch`...) nos links que divulgar.
 - Cloudflare Web Analytics (grátis) pode ser ligado também, em paralelo, para ter uma segunda fonte.
+
+### Como o painel unifica Cloudflare e PostHog
+
+- **Contagens** (visitas, pessoas diferentes, páginas vistas, estados, cidades, países, aparelhos, origem): o Cloudflare vê todos os navegadores,
+  inclusive os que bloqueiam o script do PostHog; o painel mostra o maior dos dois, sem somar (somar contaria o mesmo visitante duas vezes).
+- **Vendo agora e máximo ao mesmo tempo:** o PostHog manda um evento `viewing` a cada 60 s com a aba visível (até 4 h por navegador).
+  Antes do primeiro evento do PostHog, a série vem dos batimentos antigos do Cloudflare; depois, do PostHog.
+- **Tempo de tela:** soma dos batimentos do Cloudflare (antes do PostHog) com a duração das sessões do PostHog (depois).
+- **Cota do PostHog:** 1 milhão de eventos por mês no plano grátis. Os batimentos de 60 s são o maior consumo: cerca de 60 eventos por
+  pessoa por hora (5 mil pessoas ao mesmo tempo por 3 h já chegam a ~900 mil).

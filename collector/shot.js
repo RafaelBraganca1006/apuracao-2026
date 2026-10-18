@@ -1,5 +1,5 @@
 // Ferramenta de desenvolvimento: captura screenshot do site via DevTools, esperando o mapa terminar de carregar.
-// uso: node shot.js <url> <saida.png> [largura] [altura]   (env: EVAL="js a executar antes da captura", AFTER=ms, EXTRA=ms, PROF=dir do perfil)
+// uso: node shot.js <url> <saida.png> [largura] [altura]   (env: NOWAIT=1 (páginas sem mapa), FORMAT=jpeg, EVAL="js a executar antes da captura", AFTER=ms, EXTRA=ms, PROF=dir do perfil)
 const { spawn } = require('child_process'), fs = require('fs');
 const [url, out, w = 1440, h = 900] = process.argv.slice(2);
 const chrome = spawn('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', [
@@ -24,10 +24,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await send('Emulation.setDeviceMetricsOverride', { width: +w, height: +h, deviceScaleFactor: 1, mobile: +w < 700 });
   await send('Page.navigate', { url });
   const t0 = Date.now();
-  while (Date.now() - t0 < 120000) { if (await ev("document.body && document.body.classList.contains('ready') && window.trackerMap && window.trackerMap.loaded()")) break; await sleep(500); }
+  while (!process.env.NOWAIT && Date.now() - t0 < 120000) { if (await ev("document.body && document.body.classList.contains('ready') && window.trackerMap && window.trackerMap.loaded()")) break; await sleep(500); }
   await sleep(+(process.env.EXTRA || 3500));
   if (process.env.EVAL) { await ev(process.env.EVAL); await sleep(+(process.env.AFTER || 2500)); }
-  const shot = await send('Page.captureScreenshot', { format: 'png' });
+  const shot = await send('Page.captureScreenshot', process.env.FORMAT === 'jpeg' ? { format: 'jpeg', quality: 86 } : { format: 'png' });
   fs.writeFileSync(out, Buffer.from(shot.result.data, 'base64'));
   if (logs.length) console.log('--- console ---\n' + [...new Set(logs)].join('\n'));
   chrome.kill(); process.exit(0);

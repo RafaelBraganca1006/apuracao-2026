@@ -33,6 +33,14 @@
 .sum-n .pc { margin-top: 0; color: var(--text); }
 .sum-n .pc .roll { height: 1em; }
 .sum-n .cap { display: block; margin-top: var(--s2); font-size: 12.5px; color: var(--muted); line-height: 1.25; }
+.hemi { position: relative; margin: 0 var(--s3); }
+.hemi svg { display: block; width: 100%; height: auto; overflow: visible; }
+.hemi circle { animation: dot .5s var(--ease) backwards; animation-delay: calc(var(--i) * 2ms); }
+@keyframes dot { from { opacity: 0; transform: scale(.2); transform-box: fill-box; transform-origin: center; } }
+.hemi-c { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; }
+.hemi-c .pc { justify-content: center; margin: 0; color: var(--text); }
+.hemi-c .cap { display: block; margin-top: 4px; font-size: 12.5px; color: var(--muted); }
+.hemi-sub { margin-top: var(--s2); text-align: center; font-size: 12.5px; color: var(--text-2); }
 .pbar { display: flex; height: 8px; border-radius: 99px; overflow: hidden; margin-top: var(--s4); background: var(--neutral); gap: 1px; }
 .pbar i { display: block; height: 100%; min-width: 2px; transition: flex-grow .8s var(--ease); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: var(--s3); font-size: 12.5px; color: var(--text-2); }
@@ -72,6 +80,13 @@
   #cargoSeg button { padding: 7px 4px; }
   .cand.k2 { grid-template-columns: 1fr 34px; }
   .cand.k1 .ph.blank, .cand.k2 .ph.blank { font-size: 12px; }
+  .hemi { margin: 0 var(--s4); }
+  .hemi-c .pc { font-size: calc(30px * var(--num-k)); }
+  .hemi-c .cap { font-size: 11.5px; margin-top: 2px; }
+  .hemi-sub { margin-top: 4px; font-size: 12px; }
+  .score.min .hemi-sub, .score.min .hemi-c .cap { display: none; }
+  .score.min .hemi { margin: 0 auto; width: 190px; }
+  .score.min .hemi-c .pc { font-size: calc(26px * var(--num-k)); }
   .sum { gap: var(--s3); }
   .sum-n .pc { font-size: calc(36px * var(--num-k)); }
   .sum-n .cap { font-size: 12px; margin-top: 4px; }

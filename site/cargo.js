@@ -492,10 +492,10 @@ function skeletonDuel(st) {
     <div class="prog"><i id="progBar"></i></div>
     <div class="row meta"><span id="apTxt"></span><span id="updTxt"></span></div>`;
 }
-function skeletonSum(capA, capB, rankTitle) {
-  return `<div class="sum"><div class="sum-n"><div class="pc"><span class="roll" data-r="sa"></span></div><span class="cap">${capA}</span></div>
-    <div class="sum-n"><div class="pc"><span class="roll" data-r="sb"></span></div><span class="cap">${capB}</span></div></div>
-    <div class="pbar" id="pbar"></div><div class="chips" id="chips"></div>
+function skeletonSum(rankTitle) {
+  return `<div class="hemi"><svg id="hemi" viewBox="-106 -106 212 114" role="img" aria-label="Cadeiras por partido"></svg>
+    <div class="hemi-c"><div class="pc"><span class="roll" data-r="sa"></span></div><span class="cap" id="capA"></span></div></div>
+    <div class="hemi-sub" id="hemiSub"></div><div class="chips" id="chips"></div>
     ${rankTitle ? `<div class="rank" id="rank"><div class="rank-head"><span>${rankTitle}</span>
       <button class="link" id="rankToggle" type="button" aria-expanded="false"><span id="rankToggleTxt">Ver todos</span><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg></button></div>
       <div class="rank-wrap"><ul id="rankList"></ul></div><div class="rank-foot" id="rankFoot"></div></div>` : ''}
@@ -510,8 +510,29 @@ function chipsHtml(entries, total) {
   const top = entries.slice(0, 7), rest = entries.slice(7).reduce((s, e) => s + e[1], 0);
   return top.map(([sg, n]) => `<span><i class="dot" style="background:${partyColor(sg)}"></i>${esc(sg)} <b>${n}</b></span>`).join('') + (rest ? `<span class="more">+${rest} de outros</span>` : '');
 }
-function pbarHtml(entries) {
-  return entries.map(([sg, n]) => `<i style="flex-grow:${n};background:${partyColor(sg)}" title="${esc(sg)} ${n}"></i>`).join('');
+// hemiciclo: uma bolinha por cadeira, partidos em fatias da esquerda para a direita
+function hemiSvg(entries) {
+  const n = entries.reduce((t, e) => t + e[1], 0);
+  if (!n) return '';
+  const rows = clamp(Math.round(Math.sqrt(n / 3.4)), 2, 18), R0 = 100, r0 = rows > 2 ? 38 : 55;
+  const radii = Array.from({ length: rows }, (_, i) => r0 + ((R0 - r0) * i) / (rows - 1));
+  const sumR = radii.reduce((a, b) => a + b, 0);
+  const per = radii.map((r) => Math.max(1, Math.round((n * r) / sumR)));
+  per[rows - 1] += n - per.reduce((a, b) => a + b, 0);
+  const pts = [];
+  radii.forEach((r, i) => { for (let j = 0; j < per[i]; j++) { const th = per[i] === 1 ? Math.PI / 2 : Math.PI * (1 - j / (per[i] - 1)); pts.push({ th, r, x: r * Math.cos(th), y: -r * Math.sin(th) }); } });
+  pts.sort((a, b) => b.th - a.th || a.r - b.r);
+  const gap = Math.min((R0 - r0) / (rows - 1), ...radii.map((r, i) => (Math.PI * r) / Math.max(per[i] - 1, 1)));
+  const rad = (gap * 0.43).toFixed(2);
+  const colors = entries.flatMap(([sg, k]) => Array(k).fill(partyColor(sg)));
+  return pts.map((p, i) => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${rad}" fill="${colors[i] || '#94a3b8'}" style="--i:${i}"/>`).join('');
+}
+function setHemi(entries, num, label, sub) {
+  const svg = $('#hemi'), sig = entries.map((e) => e.join(':')).join(',') + TK.THEME;
+  if (svg._sig !== sig) { svg.innerHTML = hemiSvg(entries); svg._sig = sig; }
+  setRoll(R('sa'), String(num));
+  $('#capA').textContent = label; $('#hemiSub').textContent = sub || '';
+  $('#chips').innerHTML = chipsHtml(entries);
 }
 
 function setProgress(total, upd) {
@@ -589,9 +610,7 @@ function renderMajOverview(body, ix) {
   const turno1 = S.turno === 1, sen = S.cargo === 'senador';
   const sig = ['sum-maj', S.cargo, S.turno, TK.THEME].join('|');
   if (body._sig !== sig) {
-    const capA = sen ? 'senadores eleitos' : 'governadores eleitos';
-    const capB = sen ? 'vagas em disputa' : turno1 ? 'estados vão ao 2º turno' : 'estados ainda em disputa';
-    body.innerHTML = skeletonSum(capA, capB, ''); body._sig = sig;
+    body.innerHTML = skeletonSum(''); body._sig = sig;
   }
   const us = Object.values(ix.ufs);
   let elected = 0, runoff = 0, vagas = 0;
@@ -605,9 +624,9 @@ function renderMajOverview(body, ix) {
     if (!sen && l) lead[l.c.sg] = (lead[l.c.sg] || 0) + 1;
     if (sen) for (const c of u.cands.slice(0, 2)) if (sumVotes(u.cands)) lead[c.sg] = (lead[c.sg] || 0) + 1;
   }
-  setRoll(R('sa'), String(elected)); setRoll(R('sb'), String(sen ? vagas : runoff));
   const entries = Object.entries(lead).sort((a, b) => b[1] - a[1]);
-  $('#pbar').innerHTML = pbarHtml(entries); $('#chips').innerHTML = chipsHtml(entries);
+  const nSeats = entries.reduce((t, e) => t + e[1], 0);
+  setHemi(entries, nSeats, sen ? 'senadores' : 'governos', sen ? `${elected} de ${vagas} eleitos` : turno1 ? `${elected} eleitos · ${runoff} vão ao 2º turno` : `${elected} eleitos · ${runoff} em disputa`);
   const tot = us.reduce((a, u) => ({ secoes: a.secoes + u.total.secoes, ap: a.ap + u.total.ap }), { secoes: 0, ap: 0 });
   setProgress(tot, updText(us[0]?.updated));
   $('#note').textContent = sen ? 'Os dois mais votados de cada estado ocupam as vagas. Cor = partido do mais votado.' : 'Cor = partido do candidato mais votado em cada estado · tom = tamanho da vantagem. Toque num estado para ver os municípios.';
@@ -615,13 +634,12 @@ function renderMajOverview(body, ix) {
 
 function renderPropOverview(body, ix) {
   const sig = ['sum-prop', S.cargo, S.turno, TK.THEME].join('|');
-  if (body._sig !== sig) { body.innerHTML = skeletonSum(S.cargo === 'dep_federal' ? 'deputados federais eleitos' : 'deputados estaduais eleitos', 'partidos com cadeira', ''); body._sig = sig; }
+  if (body._sig !== sig) { body.innerHTML = skeletonSum(''); body._sig = sig; }
   const seats = {};
   let tot = 0;
   for (const u of Object.values(ix.ufs)) for (const p of u.parties) if (p.seats) { seats[p.sg] = (seats[p.sg] || 0) + p.seats; tot += p.seats; }
   const entries = Object.entries(seats).sort((a, b) => b[1] - a[1]);
-  setRoll(R('sa'), String(tot)); setRoll(R('sb'), String(entries.length));
-  $('#pbar').innerHTML = pbarHtml(entries); $('#chips').innerHTML = chipsHtml(entries);
+  setHemi(entries, tot, S.cargo === 'dep_federal' ? 'deputados federais' : 'deputados estaduais', `${entries.length} partidos com cadeira`);
   const sum = Object.values(ix.ufs).reduce((a, u) => ({ secoes: a.secoes + u.total.secoes, ap: a.ap + u.total.ap }), { secoes: 0, ap: 0 });
   setProgress(sum, updText(Object.values(ix.ufs)[0]?.updated));
   $('#note').textContent = 'Cor = partido com mais cadeiras em cada estado · tom = tamanho da vantagem. Toque num estado para ver os eleitos.';
@@ -630,11 +648,10 @@ function renderPropOverview(body, ix) {
 function renderPropState(body, st) {
   const sig = ['prop-state', S.cargo, S.uf, TK.THEME].join('|');
   if (body._sig !== sig) {
-    body.innerHTML = skeletonSum(`vagas de ${cargoLabel(S.cargo, S.uf).toLowerCase()}`, 'partidos com cadeira', 'Mais votados'); body._sig = sig; bindRank();
+    body.innerHTML = skeletonSum('Mais votados'); body._sig = sig; bindRank();
   }
   const entries = st.parties.filter((p) => p.seats).sort((a, b) => b.seats - a.seats || b.tv - a.tv).map((p) => [p.sg, p.seats]);
-  setRoll(R('sa'), String(st.vagas)); setRoll(R('sb'), String(entries.length));
-  $('#pbar').innerHTML = pbarHtml(entries); $('#chips').innerHTML = chipsHtml(entries);
+  setHemi(entries, st.vagas, `vagas · ${cargoLabel(S.cargo, S.uf).toLowerCase()}`, `${entries.length} partidos com cadeira`);
   const top = st.cands.slice(0, 12), max = top[0]?.votos || 1, den = st.total.val || 1;
   $('#rankList').innerHTML = top.map((c) => {
     const col = partyColor(c.sg);

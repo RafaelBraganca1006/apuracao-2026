@@ -74,7 +74,7 @@ async function pull() {
     const cands = Object.entries(d.people).filter(([n]) => /lula|flavio|flávio|bolsonaro/i.test(n));
     const total = cands.reduce((s, [, p]) => s + p.secs, 0) || 1;
     document.getElementById('cards').innerHTML = cands.map(([n, p]) => {
-      const terms = Object.entries(p.terms).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([t, c]) => `<span>${esc(t)} <b>${c}</b></span>`).join('');
+      const terms = Object.entries(p.terms).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([t, c]) => `<span>${esc(t)} <b>${c}</b></span>`).join('');
       return `<div class="card" style="--c:${col(n)}"><h2><i></i>${esc(n)}</h2>
         <div class="big">${Math.floor(p.secs / 60)}<small>min ${Math.round(p.secs % 60)}s</small></div>
         <div class="meta">${p.words.toLocaleString('pt-BR')} palavras · ${((p.secs / total) * 100).toFixed(0)}% do tempo dos candidatos</div>
@@ -85,7 +85,7 @@ async function pull() {
     const log = document.getElementById('log');
     log.innerHTML = d.lines.slice(-120).reverse().map((l) => `<div class="ln" style="--c:${col(l.who)}"><time>${mmss(l.t)}</time><b>${esc(l.who)}</b><span>${esc(l.text)}</span></div>`).join('') || '<div class="empty">Aguardando o debate…</div>';
     document.getElementById('checks').innerHTML = (d.checkables || []).slice(-15).reverse().map((l) => `<div class="ln" style="--c:${col(l.who)}"><time>${mmss(l.t)}</time><b>${esc(l.who)}</b><span>${esc(l.text)}</span></div>`).join('') || '<div class="empty">Nenhuma ainda.</div>';
-    document.getElementById('upd').textContent = `Transcrição automática (pode conter erros) · atualizado ${new Date(d.updated * 1000).toLocaleTimeString('pt-BR')}`;
+    document.getElementById('upd').textContent = `Transcrição automática (pode conter erros) · atualizado ${new Date(d.updated * 1000).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' }) + ' (Brasília)'}`;
   } catch (e) { /* sem dados ainda */ }
 }
 pull(); setInterval(pull, 20000);

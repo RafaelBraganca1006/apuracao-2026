@@ -118,9 +118,9 @@ function render(d) {
   $('#orgs').innerHTML = G.map(([name, rows]) => `<div class="an-grp"><span class="gn">${esc(name)}</span><div class="an-chips">${rows.map((r) => `<span class="an-chip">${esc(r.org)} <b>${big(+r.sinais)}</b> <small>visitas</small></span>`).join('')}</div></div>`).join('') || '<p class="an-note">Nenhuma rede de interesse identificada ainda.</p>';
 
   const Pg = d.pages || [], pm = Pg.reduce((a, r) => a + +r.pageviews, 0) || 1;
-  const PN = { home: 'Início', pesquisas: 'Pesquisas', apuracao: 'Apuração 2º turno', 'apuracao:1turno': 'Apuração 1º turno', cargo: 'Governador, senador e deputados', analytics: 'Analytics' };
+  const PN = { home: 'Início', pesquisas: 'Pesquisas', apuracao: 'Apuração 2º turno', 'apuracao:1turno': 'Apuração 1º turno', cargo: 'Governador, senador e deputados', debate: 'Debate Band', analytics: 'Analytics' };
   $('#pages').innerHTML = bars(Pg.map((r) => ({ k: PN[r.page] || r.page, v: +r.pageviews })), (v) => `${big(v)} <small>${pct(v / pm, 0)}</small>`);
-  const CL = d.clicks || [], CN = { pesquisas: 'Pesquisas eleitorais', apuracao: 'Apuração do 1º turno', cargo: 'Governador, senador e deputados', compartilhar: 'Compartilhar' };
+  const CL = d.clicks || [], CN = { pesquisas: 'Pesquisas eleitorais', apuracao: 'Apuração do 1º turno', cargo: 'Governador, senador e deputados', debate: 'Debate Band', compartilhar: 'Compartilhar' };
   $('#clicks').innerHTML = CL.length ? bars(CL.map((r) => ({ k: CN[r.label] || r.label, v: +r.n })), (v) => big(v)) : '<p class="an-note">Sem cliques ainda.</p>';
 }
 

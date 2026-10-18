@@ -35,7 +35,7 @@
 .sum-n .cap { display: block; margin-top: var(--s2); font-size: 12.5px; color: var(--muted); line-height: 1.25; }
 .hemi { position: relative; margin: 0 var(--s3); }
 .hemi svg { display: block; width: 100%; height: auto; overflow: visible; }
-.hemi circle { animation: dot .5s var(--ease) backwards; animation-delay: calc(var(--i) * 2ms); }
+.hemi circle { animation: dot .6s var(--ease) backwards; animation-delay: calc(var(--i) * var(--step, 2ms)); }
 @keyframes dot { from { opacity: 0; transform: scale(.2); transform-box: fill-box; transform-origin: center; } }
 .hemi-c { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; }
 .hemi-c .pc { justify-content: center; margin: 0; color: var(--text); }
@@ -98,7 +98,8 @@
   .controls .legend.r1 .lchip { display: inline-flex; }
   .controls.collapsed .r-opts .seg#turnoSeg button, .controls.collapsed .r-opts .seg#viewSeg button { padding: 6px 8px; }
   .score.min .sum-n .pc { font-size: calc(26px * var(--num-k)); }
-  .score.min .sum-n .cap, .score.min .chips, .score.min .pbar, .score.min .note { display: none; }
+  .score.min .sum-n .cap { font-size: 11px; margin-top: 2px; }
+  .score.min .chips, .score.min .pbar, .score.min .note { display: none; }
   .score.min .cand.k1, .score.min .cand.k2 { column-gap: 8px; }
   .score.min .cand.k1 { grid-template-columns: 24px 1fr; }
   .score.min .cand.k2 { grid-template-columns: 1fr 24px; }

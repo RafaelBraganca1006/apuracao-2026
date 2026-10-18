@@ -537,7 +537,10 @@ function hemiSvg(entries) {
 }
 function setHemi(entries, num, label, sub) {
   const svg = $('#hemi'), sig = entries.map((e) => e.join(':')).join(',') + TK.THEME;
-  if (svg._sig !== sig) { svg.innerHTML = hemiSvg(entries); svg._sig = sig; }
+  if (svg._sig !== sig) {
+    svg.innerHTML = hemiSvg(entries); svg._sig = sig;
+    svg.style.setProperty('--step', (1100 / Math.max(num, 1)).toFixed(2) + 'ms');   // a animação dura ~1,1 s qualquer que seja o número de cadeiras
+  }
   setRoll(R('sa'), String(num));
   $('#hemiSub').textContent = [label, sub].filter(Boolean).join(' · ');
   $('#chips').innerHTML = chipsHtml(entries);

@@ -1,0 +1,8 @@
+# Lint do coletor Python (ruff). Fica em ruff.toml, e não em pyproject.toml, para o build do Cloudflare
+# não tratar a raiz do repositório como pacote Python (ele roda `pip install .` quando vê um pyproject.toml).
+line-length = 140
+target-version = "py39"
+
+[lint]
+select = ["E", "F", "I", "B"]
+ignore = ["E402", "E701", "E702", "E731"]   # coletor: sys.path antes dos imports; one-liners deliberados

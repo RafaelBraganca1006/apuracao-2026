@@ -30,14 +30,14 @@ O site abre em `https://apuracao-2026.SEU_SUBDOMINIO.workers.dev`; domínio pró
 Os dados ao vivo ficam num **projeto próprio**, `apuracao-dados` (`data-worker/`), que só serve arquivos estáticos
 (`live.json`, `history.json`, `snaps/`) com CORS liberado e cache de 15 s. Arquivos estáticos não têm custo por requisição.
 O coletor republica esse projeto a cada rodada (~13 s; só sobem os arquivos que mudaram). Como é separado do site,
-**um `git push` nunca apaga os dados**. O `site/config.js` já aponta para `https://apuracao-dados.rbranganca.workers.dev/`
+**um `git push` nunca apaga os dados**. O `site/config.js` já aponta para `https://apuracao-dados.brlabs.workers.dev/`
 (em localhost usa `site/data/`).
 
 Uma vez, no Mac: `npx wrangler login` (já feito). Teste:
 
 ```bash
 collector/publish_live.sh        # publica data-worker/public/live.json
-curl -I https://apuracao-dados.rbranganca.workers.dev/live.json
+curl -I https://apuracao-dados.brlabs.workers.dev/live.json
 ```
 
 Na noite da apuração o coletor escreve direto em `data-worker/public/` (veja o passo 4).

@@ -20,3 +20,8 @@ data-worker/public/snaps/
 data-worker/public/gov2.json
 .pytest_cache/
 .ruff_cache/
+site/data/debate.json
+debate/raw/
+debate/out/
+debate/models/
+debate/.venv/

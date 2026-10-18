@@ -793,6 +793,7 @@ function syncUrl() {
 function renderControls() {
   $$('#cargoSeg button').forEach((b) => b.classList.toggle('on', b.dataset.cargo === S.cargo));
   $$('#turnoSeg button').forEach((b) => b.classList.toggle('on', +b.dataset.turno === S.turno));
+  $('#backBr').hidden = !S.uf;
   $('#turnoSeg').hidden = S.cargo !== 'governador';
   $('#viewSeg').hidden = !(kind() === 'prop' && S.uf);
   $$('#viewSeg button').forEach((b) => b.classList.toggle('on', b.dataset.view === S.view));
@@ -875,6 +876,7 @@ $$('#viewSeg button').forEach((b) => b.addEventListener('click', async () => {
 $$('#sortSeg button').forEach((b) => b.addEventListener('click', () => { S.sort = b.dataset.sort; renderAll(); }));
 $('#ufList').addEventListener('click', (e) => { const li = e.target.closest('li[data-sg]'); if (li && !li.classList.contains('dim')) openUF(li.dataset.sg); });
 $('#sideBack').addEventListener('click', closeUF);
+$('#backBr').addEventListener('click', closeUF);
 $('#detail').addEventListener('click', (e) => {
   const c = e.target.closest('li[data-n]'); if (c) { pickCand(c.dataset.n); return; }
   const m = e.target.closest('li[data-id]'); if (m) pickMun(m.dataset.id);

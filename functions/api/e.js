@@ -13,6 +13,10 @@ export async function onRequestPost({ request, env }) {
   const own = new URL(request.url).hostname;
   const secs = b.e === 'beat' ? Math.min(60, Math.max(0, +b.t || 0)) : 0;
 
+  // aparelho aproximado: hash de país + rede (ASN) + navegador. Não guarda IP; serve de piso para "pessoas" (o id do navegador é o teto)
+  const raw = new TextEncoder().encode(`${cf.country || ''}|${cf.asn || ''}|${ua}`);
+  const dev = [...new Uint8Array(await crypto.subtle.digest('SHA-256', raw))].slice(0, 6).map((x) => x.toString(16).padStart(2, '0')).join('');
+
   env.AE?.writeDataPoint({
     indexes: [clip(b.v, 32)],                                   // visitante anônimo (id aleatório do navegador)
     blobs: [
@@ -27,6 +31,7 @@ export async function onRequestPost({ request, env }) {
       clip(cf.asOrganization || '', 64),                        // 9 organização da rede
       clip(b.x || '', 24),                                      // 10 detalhe (ex.: qual botão)
       clip(b.s, 32),                                            // 11 sessão
+      dev,                                                      // 12 aparelho aproximado (país + rede + navegador)
     ],
     doubles: [secs, +cf.asn || 0, Math.min(1000, Math.max(1, +b.k || 1))],   // 1 segundos de tela · 2 ASN · 3 taxa de amostragem (1 em k)
   });

@@ -7,7 +7,10 @@ const q = new URLSearchParams(location.search);
 if (/^(localhost|127\.|\[::1\])/.test(location.hostname) && !q.has('beacon')) return;   // nada em desenvolvimento
 
 const rnd = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
-const get = (st, k) => { try { let v = st.getItem(k); if (!v) { v = rnd(); st.setItem(k, v); } return v; } catch { return rnd(); } };
+// Sem armazenamento (aba anônima, alguns apps): guarda o id em window.name, que sobrevive à navegação na mesma aba.
+// Antes cada página aberta gerava um visitante novo e uma pessoa virava várias.
+const fromName = (k) => { try { const m = new RegExp(`(?:^|;)tk_${k}=([^;]+)`).exec(window.name); if (m) return m[1]; const v = rnd(); window.name = (window.name ? window.name + ';' : '') + `tk_${k}=${v}`; return v; } catch { return rnd(); } };
+const get = (st, k) => { try { let v = st.getItem(k); if (!v) { v = rnd(); st.setItem(k, v); } return v; } catch { return fromName(k); } };
 const vid = get(localStorage, 'vid'), sid = get(sessionStorage, 'sid');
 // Só visita e cliques (sem batimentos): tempo de tela, "agora" e pico vêm do PostHog. SAMPLE > 1 amostra por navegador e o painel multiplica.
 const SAMPLE = 1;   // 1 = sem amostragem (o plano grátis do Worker pára de gravar após 100 mil requisições/dia; PostHog é a fonte dos totais)

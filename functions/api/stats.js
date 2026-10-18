@@ -20,6 +20,7 @@ export function queries(hours, cut = null) {
   const before = cut ? ` AND timestamp < toDateTime('${cut}')` : '';
   return {
     totals: `SELECT COUNT(DISTINCT index1) AS uniques, COUNT(DISTINCT blob11) AS visits, SUM(IF(blob1 = 'pageview', _sample_interval, 0)) AS pageviews, SUM(IF(blob1 = 'beat'${before}, double1 * _sample_interval, 0.0)) AS secs FROM ${T} WHERE ${W}`,
+    devs: `SELECT COUNT(DISTINCT blob12) AS n FROM ${T} WHERE ${W} AND blob12 != ''`,
     now: `SELECT COUNT(DISTINCT index1) AS n FROM ${T} WHERE timestamp > NOW() - INTERVAL '3' MINUTE`,
     series: `SELECT toStartOfInterval(timestamp, INTERVAL '2' MINUTE) AS t, COUNT(DISTINCT index1) AS n FROM ${T} WHERE ${W}${before} GROUP BY t ORDER BY t`,
     tvs: `SELECT COUNT(DISTINCT index1) AS n FROM ${T} WHERE ${W} AND blob4 = 'tv'`,
@@ -49,6 +50,7 @@ export function unify(cf, ph, cut) {
     now: Math.max(num(cf.now?.[0]?.n), num(ph?.now?.[0]?.n)),
     peak, series,
     uniques: Math.max(num(ct.uniques), num(pt.uniques)), visits: Math.max(num(ct.visits), num(pt.visits)), pageviews: Math.max(num(ct.pageviews), num(pt.pageviews)),
+    devices: num(cf.devs?.[0]?.n),          // piso: aparelhos distintos por país + rede + navegador (só eventos novos)
     secs: num(ct.secs) + num(ph?.secs?.[0]?.secs),
     cutoff: cut, posthog: !!ph,
     detail: { cf: { uniques: num(ct.uniques), visits: num(ct.visits), pageviews: num(ct.pageviews) }, ph: ph ? { uniques: num(pt.uniques), visits: num(pt.visits), pageviews: num(pt.pageviews) } : null },

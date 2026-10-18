@@ -37,7 +37,7 @@ function groupOrgs(rows) {
 function demo(h) {
   const d = demoCF(h), t = d.totals[0];
   d.unified = { now: 2854, peak: { t: d.series[Math.round(d.series.length * 0.72)].t, n: 8120 }, series: d.series.map((p) => ({ t: p.t, n: +p.n })),
-    uniques: Math.round(+t.uniques), visits: Math.round(+t.visits), pageviews: Math.round(+t.pageviews), secs: Math.round(+t.secs), cutoff: '2026-10-17 21:43:00', posthog: q.get('demo') !== 'cf' };
+    uniques: Math.round(+t.uniques), visits: Math.round(+t.visits), pageviews: Math.round(+t.pageviews), secs: Math.round(+t.secs), devices: Math.round(+t.uniques * 0.7), cutoff: '2026-10-17 21:43:00', posthog: q.get('demo') !== 'cf' };
   return d;
 }
 function demoCF(h) {
@@ -87,7 +87,7 @@ function render(d) {
   const key = [
     [nf(U.now), 'vendo agora', 'pessoas ativas nos últimos 3 min', 'live'],
     [big(U.peak?.n), 'máximo ao mesmo tempo', U.peak ? `pico em ${fmtT(U.peak.t)}` : 'sem dados ainda'],
-    [big(U.uniques), 'pessoas diferentes', 'navegadores únicos'],
+    [big(U.uniques), 'pessoas diferentes', U.devices ? `navegadores únicos · mínimo ${big(U.devices)} por rede e aparelho` : 'navegadores únicos'],
     [big(U.visits), 'visitas', 'sessões distintas'],
   ];
   const minor = [

@@ -86,8 +86,8 @@ def build(start):
             c = p["_c"].setdefault(k, {})
             c[w] = c.get(w, 0) + 1
         lines.append({"t": round(s["start"] - start), "who": who, "text": s["text"]})
-    for p in people.values():                          # top 10 palavras de cada um (forma mais usada de cada palavra)
-        top = sorted(p.pop("_c").items(), key=lambda kv: -sum(kv[1].values()))[:10]
+    for p in people.values():                          # top 30 palavras de cada um (a página mostra 10 e "ver mais") (forma mais usada de cada palavra)
+        top = sorted(p.pop("_c").items(), key=lambda kv: -sum(kv[1].values()))[:30]
         p["terms"] = {max(forms, key=forms.get): sum(forms.values()) for _, forms in top}
     return {"updated": int(time.time()), "people": people, "lines": lines[-400:], "total_lines": len(lines), "checkables": checks[-40:]}
 

@@ -38,10 +38,12 @@ h1 { font-family: var(--num); font-weight: 400; font-size: calc(34px * var(--num
 .ln:first-of-type { border-top: 0; }
 .ln time { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; padding-top: 2px; }
 .ln b { font-size: 12px; font-weight: 600; padding-top: 2px; color: var(--c); }
-.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 12px; }
 .stats div { padding: 8px 10px; border-radius: var(--r-sm); background: var(--surface-hi); }
 .stats b { display: block; font-size: 18px; font-weight: 500; }
 .stats span { font-size: 11px; color: var(--muted); }
+.more { font: inherit; font-size: 12px; padding: 3px 10px; border-radius: 99px; border: 1px dashed var(--line-strong); background: none; color: var(--link); cursor: pointer; }
+.more:hover { color: var(--text); }
 .empty { color: var(--muted); padding: 24px 14px; }
 @media (max-width: 640px) { .cards { grid-template-columns: 1fr; } .ln { grid-template-columns: 40px 1fr; } .ln b { grid-column: 2; padding: 0; } .ln span { grid-column: 2; } }
 </style>
@@ -56,7 +58,6 @@ h1 { font-family: var(--num); font-weight: 400; font-size: calc(34px * var(--num
   <h1>Quem falou o quê</h1>
   <div class="sub" id="upd">Transcrição automática (pode conter erros) · atualiza a cada ~30 s</div>
   <div class="cards" id="cards"></div>
-  <div class="log" style="margin-bottom:14px"><h2>Afirmações com número (a verificar)</h2><div id="checks"><div class="empty">Nenhuma ainda.</div></div></div>
   <div class="log"><h2>Transcrição</h2><div id="log"><div class="empty">Aguardando o debate…</div></div></div>
 </div>
 <script src="config.js"></script>
@@ -66,28 +67,39 @@ const BASE = window.TRACKER_LIVE_BASE || 'data/';
 const COLORS = [[/lula/i, '#ff4a5c', 'Lula'], [/fl[aá]vio|bolsonaro/i, '#4d8dff', 'Flávio Bolsonaro']];
 const col = (w) => (COLORS.find(([re]) => re.test(w)) || [0, '#94a3b8'])[1];
 const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+const expanded = new Set(); let last = null;
 const mmss = (t) => `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
 async function pull() {
   try {
     const r = await fetch(`${BASE}debate.json?t=${Math.floor(Date.now() / 15000)}`, { cache: 'no-store' });
-    const d = await r.json();
+    const d = await r.json(); last = d; draw(d);
+  } catch (e) { /* sem dados ainda */ }
+}
+function draw(d) {
+  {
     const cands = Object.entries(d.people).filter(([n]) => /lula|flavio|flávio|bolsonaro/i.test(n));
     const total = cands.reduce((s, [, p]) => s + p.secs, 0) || 1;
     document.getElementById('cards').innerHTML = cands.map(([n, p]) => {
-      const terms = Object.entries(p.terms).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([t, c]) => `<span>${esc(t)} <b>${c}</b></span>`).join('');
+      const all = Object.entries(p.terms).sort((a, b) => b[1] - a[1]).slice(0, 30), open = expanded.has(n);
+      const terms = all.slice(0, open ? 30 : 10).map(([t, c]) => `<span>${esc(t)} <b>${c}</b></span>`).join('')
+        + (all.length > 10 ? `<button class="more" data-n="${esc(n)}" type="button">${open ? 'Ver menos' : 'Ver mais'}</button>` : '');
       return `<div class="card" style="--c:${col(n)}"><h2><i></i>${esc(n)}</h2>
         <div class="big">${Math.floor(p.secs / 60)}<small>min ${Math.round(p.secs % 60)}s</small></div>
         <div class="meta">${p.words.toLocaleString('pt-BR')} palavras · ${((p.secs / total) * 100).toFixed(0)}% do tempo dos candidatos</div>
         <div class="bar"><b style="width:${(p.secs / total) * 100}%"></b></div>
-        <div class="stats"><div><b>${p.interrupts || 0}</b><span>cortes</span></div><div><b>${p.questions || 0}</b><span>perguntas</span></div><div><b>${p.numbers || 0}</b><span>falas com número</span></div></div>
+        <div class="stats"><div><b>${p.interrupts || 0}</b><span>cortes</span></div><div><b>${p.questions || 0}</b><span>perguntas</span></div></div>
         <div class="terms">${terms}</div></div>`;
     }).join('') || '';
     const log = document.getElementById('log');
     log.innerHTML = d.lines.slice(-120).reverse().map((l) => `<div class="ln" style="--c:${col(l.who)}"><time>${mmss(l.t)}</time><b>${esc(l.who)}</b><span>${esc(l.text)}</span></div>`).join('') || '<div class="empty">Aguardando o debate…</div>';
-    document.getElementById('checks').innerHTML = (d.checkables || []).slice(-15).reverse().map((l) => `<div class="ln" style="--c:${col(l.who)}"><time>${mmss(l.t)}</time><b>${esc(l.who)}</b><span>${esc(l.text)}</span></div>`).join('') || '<div class="empty">Nenhuma ainda.</div>';
     document.getElementById('upd').textContent = `Transcrição automática (pode conter erros) · atualizado ${new Date(d.updated * 1000).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' }) + ' (Brasília)'}`;
-  } catch (e) { /* sem dados ainda */ }
+  }
 }
+document.getElementById('cards').addEventListener('click', (e) => {
+  const b = e.target.closest('button.more'); if (!b) return;
+  expanded.has(b.dataset.n) ? expanded.delete(b.dataset.n) : expanded.add(b.dataset.n);
+  if (last) draw(last);
+});
 pull(); setInterval(pull, 20000);
 })();
 </script>

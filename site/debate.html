@@ -129,6 +129,22 @@ h1 { font-family: var(--num); font-weight: 400; font-size: calc(40px * var(--num
 .ckrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .ckrow > span { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); min-width: 78px; }
 .ckrow .chips button { padding: 6px 11px; }
+.ckbar { flex-direction: row; flex-wrap: wrap; gap: 10px; }
+.sel { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px; }
+.sel span { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.sel select { font: inherit; font-size: 14px; height: 40px; padding: 0 12px; color: var(--text); background: var(--input); border: 1px solid var(--line); border-radius: var(--r-md); outline: none; cursor: pointer; }
+.sel select:focus { border-color: var(--line-strong); }
+/* buscador de palavra */
+.ws { display: flex; gap: 10px; flex-wrap: wrap; }
+.ws input { flex: 1; min-width: 200px; height: 44px; padding: 0 14px; color: var(--text); font: inherit; font-size: 15px; background: var(--input); border: 1px solid var(--line); border-radius: var(--r-md); outline: none; }
+.ws input:focus { border-color: var(--line-strong); box-shadow: 0 0 0 3px var(--surface-hi-2); }
+.wr { margin-top: 12px; display: grid; gap: 8px; }
+.wr .row { display: grid; grid-template-columns: 96px 1fr 64px; gap: 10px; align-items: center; font-size: 13.5px; }
+.wr .row b { font-weight: 600; color: var(--c); }
+.wr .bar { height: 10px; border-radius: 99px; background: var(--surface-hi); overflow: hidden; }
+.wr .bar i { display: block; height: 100%; background: var(--c); border-radius: 99px; transition: width .25s; }
+.wr .row em { font-style: normal; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.wr .go { margin-top: 4px; justify-self: start; }
 .method { margin-bottom: 14px; }
 .method summary { cursor: pointer; font-weight: 600; font-size: 14px; }
 .method p, .method li { font-size: 13px; color: var(--text-2); line-height: 1.55; margin-top: 8px; }
@@ -184,6 +200,9 @@ h1 { font-family: var(--num); font-weight: 400; font-size: calc(40px * var(--num
 
   <section class="pane" id="p-resumo">
     <div class="kpis" id="kpis"></div>
+    <div class="sec-h">Busque uma palavra</div>
+    <div class="box"><div class="ws"><input id="wq" type="search" placeholder="Digite uma palavra ou expressão (ex.: emprego, saúde, 134 milhões)" autocomplete="off" aria-label="Buscar palavra"></div>
+      <div class="wr" id="wr"><span class="note" style="margin:0">Veja quantas vezes cada um falou. Conta a palavra exata, sem diferenciar acentos nem maiúsculas; termine com * para incluir variações (ex.: <i>empreg*</i> pega emprego, empregos, empregar).</span></div></div>
     <div class="sec-h">Quem falava em cada momento</div>
     <div class="box"><svg class="tl" id="tl" viewBox="0 0 1000 156" role="img" aria-label="Linha do tempo de quem falou"></svg>
       <div class="tl-lg"><span><i style="background:var(--flavio)"></i>Flávio Bolsonaro</span><span><i style="background:var(--lula)"></i>Lula</span><span><i style="background:var(--muted)"></i>Mediadores</span><span>Toque num trecho para ler a transcrição</span></div></div>
@@ -216,10 +235,9 @@ h1 { font-family: var(--num); font-weight: 400; font-size: calc(40px * var(--num
     <div class="sec-h">Afirmações verificadas</div>
     <details class="box method" id="method"><summary>Como checamos</summary><div id="methodBody"></div></details>
     <div class="ckbar">
-      <div class="ckrow"><span>Ordem</span><div class="chips" id="ckSort">
-        <button class="on" data-s="cron">Ordem do debate</button><button data-s="rec">Mais recentes primeiro</button><button data-s="ver">Veredito</button><button data-s="ass">Assunto</button></div></div>
-      <div class="ckrow"><span>Candidato</span><div class="chips" id="ckWho"><button class="on" data-w="">Todos</button><button data-w="Lula">Lula</button><button data-w="Flavio Bolsonaro">Flávio</button></div></div>
-      <div class="ckrow"><span>Veredito</span><div class="chips" id="ckVer"></div></div>
+      <label class="sel"><span>Ordem</span><select id="ckSort"><option value="cron">Ordem do debate</option><option value="rec">Mais recentes primeiro</option><option value="ver">Veredito</option><option value="ass">Assunto</option></select></label>
+      <label class="sel"><span>Candidato</span><select id="ckWho"><option value="">Todos</option><option value="Lula">Lula</option><option value="Flavio Bolsonaro">Flávio Bolsonaro</option></select></label>
+      <label class="sel"><span>Veredito</span><select id="ckVer"></select></label>
     </div>
     <div class="count" id="ckCount"></div>
     <div class="ck" id="ck"></div>
@@ -355,6 +373,31 @@ function goTo(t) {
   try { history.replaceState(null, '', location.pathname + '#t=' + line.t); } catch (e) { /* sem history */ }
 }
 
+/* ---------- buscador de palavra ---------- */
+function wordCount(raw) {
+  const q = norm(raw).trim().replace(/\s+/g, ' ');
+  if (!q) return null;
+  const pre = q.endsWith('*'), body = q.replace(/\*+$/, '').trim();
+  if (body.length < 2) return null;
+  const re = new RegExp('(?<![a-z0-9])' + body.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + (pre ? '' : '(?![a-z0-9])'), 'g');
+  const c = { Lula: 0, 'Flavio Bolsonaro': 0, Mediador: 0 };
+  D.lines.forEach((l) => { const n = (norm(l.text).match(re) || []).length; if (n) c[l.who] = (c[l.who] || 0) + n; });
+  return { c, shown: raw.trim() };
+}
+function drawWord() {
+  const r = wordCount($('#wq').value);
+  if (!r) return;
+  const total = Object.values(r.c).reduce((a, b) => a + b, 0), max = Math.max(1, ...Object.values(r.c));
+  $('#wr').innerHTML = ['Lula', 'Flavio Bolsonaro', 'Mediador'].map((w) => `<div class="row" style="--c:${col(w)}"><b>${esc(nm(w))}</b><div class="bar"><i style="width:${(r.c[w] / max) * 100}%"></i></div><em>${fmt(r.c[w])}</em></div>`).join('')
+    + (total ? `<button class="btn go" type="button" id="wgo">Ver as ${fmt(total)} ${total === 1 ? 'ocorrência' : 'ocorrências'} na transcrição</button>` : '<span class="note" style="margin:0">Ninguém disse essa palavra.</span>');
+}
+$('#wq').addEventListener('input', drawWord);
+$('#wr').addEventListener('click', (e) => {
+  if (!e.target.closest('#wgo')) return;
+  tab('transcricao'); filter = { w: '', q: $('#wq').value.replace(/\*+$/, '') }; $('#q').value = filter.q;
+  document.querySelectorAll('#who button').forEach((x, i) => x.classList.toggle('on', i === 0)); shown = 80; drawLog(); window.scrollTo({ top: 0 });
+});
+
 /* ---------- checagem (só aparece se existir checagem.json) ---------- */
 const VD = { ok: ['Confere', 'ok'], ap: ['Aproximado', 'ap'], ct: ['Falta contexto', 'ct'], im: ['Exagerado ou impreciso', 'im'], fa: ['Falso', 'fa'], nc: ['Sem confirmação', 'nc'] };
 const VORDER = ['ok', 'ap', 'ct', 'im', 'fa', 'nc'];
@@ -369,7 +412,7 @@ function drawCheck() {
   $('#tabCk').hidden = false;
   $('#methodBody').innerHTML = ck.method || '';
   const counts = {}; ck.items.forEach((it) => { counts[it.verdict] = (counts[it.verdict] || 0) + 1; });
-  $('#ckVer').innerHTML = `<button class="${ckf.v ? '' : 'on'}" data-v="">Todos</button>` + VORDER.filter((v) => counts[v]).map((v) => `<button class="${ckf.v === v ? 'on' : ''}" data-v="${v}">${VD[v][0]} · ${counts[v]}</button>`).join('');
+  $('#ckVer').innerHTML = `<option value="">Todos</option>` + VORDER.filter((v) => counts[v]).map((v) => `<option value="${v}"${ckf.v === v ? ' selected' : ''}>${VD[v][0]} (${counts[v]})</option>`).join('');
   const list = ckList();
   $('#ckCount').textContent = `${list.length} ${list.length === 1 ? 'afirmação' : 'afirmações'}`;
   $('#ck').innerHTML = list.map((it) => {
@@ -381,12 +424,10 @@ function drawCheck() {
       ${(it.cross || []).length ? `<div class="src" style="color:var(--muted)">Também checado por: ${it.cross.map((s) => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>`).join('')}</div>` : ''}</div>`;
   }).join('') || '<div class="empty">Nenhuma afirmação com esses filtros.</div>';
   $('#ckNote').textContent = ck.note || '';
-  document.querySelectorAll('#ckSort button').forEach((b) => b.classList.toggle('on', b.dataset.s === ckf.s));
-  document.querySelectorAll('#ckWho button').forEach((b) => b.classList.toggle('on', b.dataset.w === ckf.w));
 }
-$('#ckSort').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { ckf.s = b.dataset.s; drawCheck(); } });
-$('#ckWho').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { ckf.w = b.dataset.w; drawCheck(); } });
-$('#ckVer').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { ckf.v = b.dataset.v; drawCheck(); } });
+$('#ckSort').addEventListener('change', (e) => { ckf.s = e.target.value; drawCheck(); });
+$('#ckWho').addEventListener('change', (e) => { ckf.w = e.target.value; drawCheck(); });
+$('#ckVer').addEventListener('change', (e) => { ckf.v = e.target.value; drawCheck(); });
 $('#ck').addEventListener('click', (e) => { const a = e.target.closest('a[data-go]'); if (a) { e.preventDefault(); goTo(+a.dataset.go); } });
 
 /* ---------- dados ---------- */

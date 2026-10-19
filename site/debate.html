@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0b0c">
 <title>Debate da Band · transcrição e números</title>
-<meta name="description" content="Transcrição do debate e palavras mais usadas por Lula e Flávio Bolsonaro.">
+<meta name="description" content="Transcrição completa do debate, assuntos, palavras mais usadas e linha do tempo de quem falou em cada momento.">
 <meta property="og:title" content="Debate da Band · transcrição e números">
-<meta property="og:description" content="Transcrição e palavras mais usadas por Lula e Flávio Bolsonaro.">
+<meta property="og:description" content="Transcrição completa, assuntos e palavras mais usadas por Lula e Flávio Bolsonaro.">
 <meta property="og:image" content="https://apuracao-2026.brlabs.workers.dev/og.jpg?v=2">
 <meta name="twitter:card" content="summary_large_image">
 <script>try{var t=new URLSearchParams(location.search).get('theme')||localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}</script>
@@ -15,90 +15,395 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Petrona:ital,wght@0,300..700;1,300..700&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
-body { overflow: auto; }
-.wrap { position: relative; z-index: 2; max-width: 920px; margin: 0 auto; padding: 20px 16px 60px; }
-.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
-h1 { font-family: var(--num); font-weight: 400; font-size: calc(34px * var(--num-k)); letter-spacing: var(--title-ls); line-height: 1.05; margin: 6px 0 4px; }
+body { overflow-y: auto; overflow-x: hidden; }
+.wrap { position: relative; z-index: 2; max-width: 1040px; margin: 0 auto; padding: 18px 16px 70px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
+.top .l { display: flex; gap: 8px; align-items: center; }
+h1 { font-family: var(--num); font-weight: 400; font-size: calc(40px * var(--num-k)); letter-spacing: var(--title-ls); line-height: 1.02; margin: 6px 0 6px; }
 .sub { color: var(--muted); font-size: 13px; }
-.cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 18px 0; }
-.card { background: var(--panel-solid); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 14px 16px; box-shadow: var(--shadow-sm); min-width: 0; }
-.card h2 { font-size: 15px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.warn { color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+/* abas */
+.tabs { display: flex; gap: 4px; margin: 22px 0 18px; padding: 4px; background: var(--surface-hi); border-radius: 12px; width: fit-content; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tabs button { background: none; border: 0; padding: 8px 16px; border-radius: 9px; color: var(--muted); font-weight: 500; font-size: 13.5px; white-space: nowrap; transition: color .2s, background .2s; }
+.tabs button:hover { color: var(--text-2); }
+.tabs button.on { background: var(--thumb); color: var(--seg-on); box-shadow: inset 0 1px 0 var(--hl); }
+.pane[hidden] { display: none !important; }
+
+.sec-h { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 500; margin: 26px 0 10px; }
+.sec-h:first-child { margin-top: 0; }
+.box { background: var(--panel-solid); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 16px 18px; box-shadow: var(--shadow-sm); min-width: 0; }
+
+/* números do debate */
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.kpi { background: var(--panel-solid); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 14px 16px; }
+.kpi b { display: block; font-family: var(--num); font-weight: 400; font-size: calc(34px * var(--num-k)); line-height: 1.05; letter-spacing: var(--num-ls); font-variant-numeric: lining-nums; }
+.kpi span { font-size: 12px; color: var(--muted); }
+.kpi.l b { color: var(--lula); } .kpi.f b { color: var(--flavio); }
+
+/* linha do tempo */
+.tl { width: 100%; height: auto; display: block; }
+.tl .lane { fill: var(--surface-hi); }
+.tl rect.r { cursor: pointer; transition: opacity .15s; }
+.tl rect.r:hover { opacity: .65; }
+.tl text { font: 500 13px var(--font); fill: var(--muted); }
+.tl-lg { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; font-size: 12px; color: var(--muted); }
+.tl-lg i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+
+/* cartões de cada candidato */
+.cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.card h2 { font-size: 16px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
 .card h2 i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
-.big { font-family: var(--num); font-size: calc(44px * var(--num-k)); line-height: 1; color: var(--c); }
-.big small { font-size: .45em; opacity: .65; margin-left: 4px; }
-.meta { color: var(--muted); font-size: 12.5px; margin-top: 6px; }
-.bar { height: 6px; border-radius: 99px; background: var(--surface-hi); margin-top: 10px; overflow: hidden; }
-.bar b { display: block; height: 100%; background: var(--c); transition: width .8s var(--ease); }
-.terms { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-.terms span { font-size: 12px; padding: 3px 9px; border-radius: 99px; background: var(--surface-hi); color: var(--text-2); }
-.terms b { color: var(--c); font-weight: 600; }
-.log { background: var(--panel-solid); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 6px 4px; }
-.log h2 { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding: 10px 14px 4px; }
-.ln { display: grid; grid-template-columns: 46px 96px 1fr; gap: 10px; padding: 7px 14px; font-size: 14px; line-height: 1.4; border-top: 1px solid var(--line); }
-.ln:first-of-type { border-top: 0; }
-.ln time { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; padding-top: 2px; }
-.ln b { font-size: 12px; font-weight: 600; padding-top: 2px; color: var(--c); }
-.stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 12px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .stats div { padding: 8px 10px; border-radius: var(--r-sm); background: var(--surface-hi); }
 .stats b { display: block; font-size: 18px; font-weight: 500; }
 .stats span { font-size: 11px; color: var(--muted); }
+.terms { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.terms span { font-size: 12px; padding: 3px 9px; border-radius: 99px; background: var(--surface-hi); color: var(--text-2); }
+.terms b { color: var(--c); font-weight: 600; }
 .more { font: inherit; font-size: 12px; padding: 3px 10px; border-radius: 99px; border: 1px dashed var(--line-strong); background: none; color: var(--link); cursor: pointer; }
 .more:hover { color: var(--text); }
+.lab { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 14px 0 0; }
+
+/* palavras características */
+.dist { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.dist li { list-style: none; display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 6px 0; border-top: 1px solid var(--line); font-size: 13.5px; }
+.dist li:first-child { border-top: 0; }
+.dist small { color: var(--muted); font-size: 11.5px; }
+.dist ul { padding: 0; }
+.note { color: var(--muted); font-size: 12px; margin-top: 10px; line-height: 1.5; }
+
+/* assuntos */
+.th { display: grid; grid-template-columns: 1fr 150px 1fr; gap: 12px; align-items: center; padding: 11px 0; border-top: 1px solid var(--line); }
+.th:first-child { border-top: 0; }
+.th .nm { text-align: center; font-size: 13.5px; font-weight: 500; }
+.th .sd { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.th .sd.l { flex-direction: row-reverse; }
+.th .bar { flex: 1; height: 10px; border-radius: 99px; background: var(--surface-hi); overflow: hidden; display: flex; }
+.th .sd.l .bar { justify-content: flex-end; }
+.th .bar b { display: block; height: 100%; border-radius: 99px; background: var(--c); transition: width .8s var(--ease); }
+.th .n { font-size: 13px; font-weight: 600; min-width: 28px; color: var(--c); }
+.th .sd.l .n { text-align: right; }
+.thw { border-top: 1px solid var(--line); }
+.thw:first-child { border-top: 0; }
+.thw .th { border-top: 0; padding-bottom: 6px; }
+.th .nm { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
+.tgi { font: inherit; font-size: 11px; line-height: 1; padding: 3px 7px; border-radius: 6px; border: 0; background: var(--surface-hi); color: var(--muted); cursor: pointer; white-space: nowrap; }
+.tgi:hover { color: var(--text); background: var(--surface-hi-2); }
+.wd { padding: 6px 4px 14px; }
+.wd .wl { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.wd .wl span { font-size: 12.5px; padding: 3px 9px; border-radius: 99px; background: var(--surface-hi); color: var(--text-2); }
+.wd .wl b.l { color: var(--lula); font-weight: 600; } .wd .wl b.f { color: var(--flavio); font-weight: 600; } .wd .wl b.m { color: var(--muted); font-weight: 600; }
+.wd .wl span.off { opacity: .55; }
+.wd h4 { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 500; margin: 12px 0 0; }
+.wd h4:first-child { margin-top: 0; }
+.wd p { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 8px; }
+.th-h { display: grid; grid-template-columns: 1fr 150px 1fr; gap: 12px; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+.th-h span:first-child { text-align: right; color: var(--lula); } .th-h span:last-child { color: var(--flavio); }
+
+/* transcrição */
+.tools { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.tools input { flex: 1; min-width: 200px; height: 42px; padding: 0 14px; color: var(--text); font: inherit; font-size: 14px; background: var(--input); border: 1px solid var(--line); border-radius: var(--r-md); outline: none; }
+.tools input:focus { border-color: var(--line-strong); box-shadow: 0 0 0 3px var(--surface-hi-2); }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chips button { font: inherit; font-size: 12.5px; padding: 7px 12px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface-hi); color: var(--muted); cursor: pointer; }
+.chips button.on { color: var(--seg-on); background: var(--thumb); border-color: var(--line-strong); }
+.count { font-size: 12.5px; color: var(--muted); margin: 0 0 8px; }
+.log { background: var(--panel-solid); border: 1px solid var(--line); border-radius: var(--r-lg); }
+.ln { display: grid; grid-template-columns: 54px 104px 1fr auto; gap: 10px; padding: 9px 14px; font-size: 14.5px; line-height: 1.45; border-top: 1px solid var(--line); scroll-margin-top: 80px; }
+.ln:first-child { border-top: 0; }
+.ln time { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; padding-top: 2px; }
+.ln b { font-size: 12px; font-weight: 600; padding-top: 2px; color: var(--c); }
+.ln mark { background: color-mix(in srgb, var(--c) 28%, transparent); color: inherit; border-radius: 3px; padding: 0 1px; }
+.ln.hit { background: var(--surface-hi-2); }
+.ln .acts { display: flex; gap: 2px; opacity: 0; transition: opacity .15s; }
+.ln:hover .acts, .ln:focus-within .acts { opacity: 1; }
+.ln .acts button, .ln .acts a { background: none; border: 0; color: var(--muted); padding: 2px 6px; border-radius: 6px; font-size: 12px; cursor: pointer; text-decoration: none; }
+.ln .acts button:hover, .ln .acts a:hover { color: var(--text); background: var(--surface-hi-2); }
 .empty { color: var(--muted); padding: 24px 14px; }
-@media (max-width: 640px) { .cards { grid-template-columns: 1fr; } .ln { grid-template-columns: 40px 1fr; } .ln b { grid-column: 2; padding: 0; } .ln span { grid-column: 2; } }
+.btn-more { display: block; margin: 14px auto 0; }
+
+/* checagem */
+.ckbar { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.ckrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ckrow > span { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); min-width: 78px; }
+.ckrow .chips button { padding: 6px 11px; }
+.method { margin-bottom: 14px; }
+.method summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+.method p, .method li { font-size: 13px; color: var(--text-2); line-height: 1.55; margin-top: 8px; }
+.method ul { padding-left: 18px; }
+.tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; align-items: center; }
+.tag { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--surface-hi); color: var(--muted); }
+.ck { display: grid; gap: 12px; }
+.ck .it { background: var(--panel-solid); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 14px 16px; }
+.ck .q { font-family: var(--num); font-size: calc(19px * var(--num-k)); line-height: 1.3; }
+.ck .who { font-size: 12px; color: var(--muted); margin: 4px 0 10px; }
+.ck .who a { color: var(--link); }
+.vd { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 3px 9px; border-radius: 99px; margin-bottom: 8px; background: var(--surface-hi-2); color: var(--text-2); }
+.vd.ok { background: rgba(95, 224, 160, .14); color: #5fe0a0; } .vd.ap { background: rgba(255, 198, 92, .14); color: #ffc65c; }
+.vd.im { background: rgba(255, 150, 80, .15); color: #ff9650; } .vd.ct { background: rgba(255, 198, 92, .14); color: #ffc65c; }
+.vd.fa { background: rgba(255, 106, 106, .15); color: #ff6a6a; } .vd.nc { background: var(--surface-hi-2); color: var(--text-2); }
+:root[data-theme="light"] .vd.ok { background: #e6f4ea; color: #137333; } :root[data-theme="light"] .vd.ap { background: #fef0cd; color: #b06000; }
+:root[data-theme="light"] .vd.im { background: #ffe9d6; color: #b34a00; } :root[data-theme="light"] .vd.ct { background: #fef0cd; color: #b06000; }
+:root[data-theme="light"] .vd.fa { background: #fce8e6; color: #c5221f; }
+.ck p { font-size: 14px; color: var(--text-2); line-height: 1.5; }
+.src { margin-top: 8px; font-size: 12.5px; } .src a { color: var(--link); margin-right: 12px; }
+
+@media (max-width: 760px) {
+  h1 { font-size: calc(32px * var(--num-k)); }
+  .kpis { grid-template-columns: 1fr 1fr; }
+  .cards, .dist { grid-template-columns: 1fr; }
+  .th, .th-h { grid-template-columns: 1fr 1fr; }
+  .th .nm { grid-column: 1 / -1; order: -1; text-align: left; }
+  .th-h span:nth-child(2) { display: none; }
+  .ln { grid-template-columns: 46px 1fr auto; }
+  .ln b { grid-column: 2; padding: 0; } .ln span.tx { grid-column: 2 / -1; }
+  .ln .acts { opacity: 1; grid-row: 1; grid-column: 3; }
+}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
-    <a class="pill homelink" href="index.html"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5"/></svg><span>Início</span></a>
+    <div class="l">
+      <a class="pill homelink" href="index.html"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5"/></svg><span>Início</span></a>
+    </div>
     <div class="pill" id="pill" data-s="live"><i></i><span>Ao vivo</span></div>
   </div>
   <div class="sub">Debate Band · 18/10/2026</div>
   <h1>O debate em números</h1>
-  <div class="sub" id="upd">Transcrição automática (pode conter erros) · atualiza a cada ~30 s</div>
-  <div class="cards" id="cards"></div>
-  <div class="log"><h2>Transcrição</h2><div id="log"><div class="empty">Aguardando o debate…</div></div></div>
+  <div class="warn" id="upd">Transcrição automática, pode conter erros.</div>
+
+  <div class="tabs" id="tabs" role="tablist">
+    <button class="on" data-tab="resumo" role="tab">Resumo</button>
+    <button data-tab="temas" role="tab">Assuntos</button>
+    <button data-tab="transcricao" role="tab">Transcrição</button>
+    <button data-tab="checagem" role="tab" id="tabCk" hidden>Checagem</button>
+  </div>
+
+  <section class="pane" id="p-resumo">
+    <div class="kpis" id="kpis"></div>
+    <div class="sec-h">Quem falava em cada momento</div>
+    <div class="box"><svg class="tl" id="tl" viewBox="0 0 1000 156" role="img" aria-label="Linha do tempo de quem falou"></svg>
+      <div class="tl-lg"><span><i style="background:var(--flavio)"></i>Flávio Bolsonaro</span><span><i style="background:var(--lula)"></i>Lula</span><span><i style="background:var(--muted)"></i>Mediadores</span><span>Toque num trecho para ler a transcrição</span></div></div>
+    <div class="sec-h">Cada candidato</div>
+    <div class="cards" id="cards"></div>
+    <div class="sec-h">Palavras que cada um usou bem mais que o outro</div>
+    <div class="dist" id="dist"></div>
+    <div class="note">Contagem automática sobre a transcrição, sem distinguir o sentido da fala. Palavras como "Lula" podem aparecer como citação ou crítica.</div>
+  </section>
+
+  <section class="pane" id="p-temas" hidden>
+    <div class="sec-h">Quanto cada um falou de cada assunto</div>
+    <div class="box"><div class="th-h"><span>Lula</span><span></span><span>Flávio Bolsonaro</span></div><div id="themes"></div></div>
+    <div class="note">Cada número é a quantidade de vezes que palavras ligadas ao assunto foram ditas (por exemplo, "emprego", "juros" e "PIB" contam para Economia). É um indicador de ênfase, não de qualidade nem de posição.</div>
+  </section>
+
+  <section class="pane" id="p-transcricao" hidden>
+    <div class="tools">
+      <input id="q" type="search" placeholder="Buscar na transcrição… (ex.: saúde, 134 milhões, armas)" autocomplete="off" aria-label="Buscar na transcrição">
+      <div class="chips" id="who">
+        <button class="on" data-w="">Todos</button><button data-w="Lula">Lula</button><button data-w="Flavio Bolsonaro">Flávio</button><button data-w="Mediador">Mediadores</button>
+      </div>
+    </div>
+    <div class="count" id="count"></div>
+    <div class="log" id="log"></div>
+    <button class="btn btn-more" id="moreLines" type="button" hidden>Mostrar mais</button>
+  </section>
+
+  <section class="pane" id="p-checagem" hidden>
+    <div class="sec-h">Afirmações verificadas</div>
+    <details class="box method" id="method"><summary>Como checamos</summary><div id="methodBody"></div></details>
+    <div class="ckbar">
+      <div class="ckrow"><span>Ordem</span><div class="chips" id="ckSort">
+        <button class="on" data-s="cron">Ordem do debate</button><button data-s="rec">Mais recentes primeiro</button><button data-s="ver">Veredito</button><button data-s="ass">Assunto</button></div></div>
+      <div class="ckrow"><span>Candidato</span><div class="chips" id="ckWho"><button class="on" data-w="">Todos</button><button data-w="Lula">Lula</button><button data-w="Flavio Bolsonaro">Flávio</button></div></div>
+      <div class="ckrow"><span>Veredito</span><div class="chips" id="ckVer"></div></div>
+    </div>
+    <div class="count" id="ckCount"></div>
+    <div class="ck" id="ck"></div>
+    <div class="note" id="ckNote"></div>
+  </section>
 </div>
 <script src="config.js"></script>
 <script>
 (() => {
 const BASE = window.TRACKER_LIVE_BASE || 'data/';
-const COLORS = [[/lula/i, '#ff4a5c', 'Lula'], [/fl[aá]vio|bolsonaro/i, '#4d8dff', 'Flávio Bolsonaro']];
-const col = (w) => (COLORS.find(([re]) => re.test(w)) || [0, '#94a3b8'])[1];
-const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
-const expanded = new Set(); let last = null;
-const mmss = (t) => `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
-async function pull() {
+const NAME = { 'Flavio Bolsonaro': 'Flávio Bolsonaro', Lula: 'Lula', Mediador: 'Mediadores' };
+const COLOR = { 'Flavio Bolsonaro': 'var(--flavio)', Lula: 'var(--lula)', Mediador: 'var(--muted)' };
+const nm = (w) => NAME[w] || w;
+const col = (w) => COLOR[w] || 'var(--muted)';
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const fmt = (n) => Math.round(n).toLocaleString('pt-BR');
+const mmss = (t) => { const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), s = t % 60; return (h ? h + ':' : '') + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0'); };
+const $ = (s) => document.querySelector(s);
+const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+let D = null, expanded = new Set(), filter = { w: '', q: '' }, shown = 80, ck = null;
+
+/* ---------- abas ---------- */
+function tab(name, push = true) {
+  document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === name));
+  document.querySelectorAll('.pane').forEach((p) => { p.hidden = p.id !== 'p-' + name; });
+  if (push) { try { history.replaceState(null, '', location.pathname + (name === 'resumo' ? '' : '#' + name)); } catch (e) { /* sem history */ } }
+}
+$('#tabs').addEventListener('click', (e) => { const b = e.target.closest('button[data-tab]'); if (b) tab(b.dataset.tab); });
+
+/* ---------- resumo ---------- */
+function drawResumo() {
+  const P = D.people, F = P['Flavio Bolsonaro'] || {}, L = P.Lula || {};
+  $('#kpis').innerHTML = [
+    [mmss(D.duration).replace(/^(\d+):(\d+):(\d+)$/, '$1 h $2 min'), 'de transmissão (com intervalo)', ''],
+    [fmt(L.words || 0), 'palavras de Lula', 'l'],
+    [fmt(F.words || 0), 'palavras de Flávio', 'f'],
+    [fmt(D.total_lines), 'trechos transcritos', ''],
+  ].map(([n, l, c]) => `<div class="kpi ${c}"><b>${n}</b><span>${l}</span></div>`).join('');
+
+  // linha do tempo: uma faixa por quem fala
+  const W = 1000, lane = { 1: 14, 2: 54, 0: 94 }, H = 26, dur = Math.max(D.duration, 1);
+  let svg = '';
+  for (const y of Object.values(lane)) svg += `<rect class="lane" x="0" y="${y}" width="${W}" height="${H}" rx="6"/>`;
+  const clr = { 1: 'var(--flavio)', 2: 'var(--lula)', 0: 'var(--muted)' };
+  for (const [a, b, k] of D.runs) {
+    const x = (a / dur) * W, w = Math.max(((b - a) / dur) * W, 1.5);
+    svg += `<rect class="r" data-t="${Math.round(a)}" x="${x.toFixed(1)}" y="${lane[k]}" width="${w.toFixed(1)}" height="${H}" rx="3" fill="${clr[k]}"><title>${mmss(Math.round(a))} · ${nm(Object.keys(D.spk).find((n) => D.spk[n] === k))}</title></rect>`;
+  }
+  for (let m = 0; m * 60 <= dur; m += 15) svg += `<text x="${(m * 60 / dur) * W}" y="148" text-anchor="${m ? 'middle' : 'start'}">${m ? m + ' min' : '0'}</text>`;
+  $('#tl').innerHTML = svg;
+
+  const cands = Object.entries(P).filter(([n]) => n !== 'Mediador').sort((a) => (a[0] === 'Lula' ? -1 : 1));
+  $('#cards').innerHTML = cands.map(([n, p]) => {
+    const all = Object.entries(p.terms).sort((a, b) => b[1] - a[1]).slice(0, 30), open = expanded.has(n);
+    const terms = all.slice(0, open ? 30 : 10).map(([t, c]) => `<span>${esc(t)} <b>${c}</b></span>`).join('') + (all.length > 10 ? `<button class="more" data-n="${esc(n)}" type="button">${open ? 'Ver menos' : 'Ver mais'}</button>` : '');
+    return `<div class="box card" style="--c:${col(n)}"><h2><i></i>${esc(nm(n))}</h2>
+      <div class="stats"><div><b>${fmt(p.words)}</b><span>palavras</span></div><div><b>${p.questions || 0}</b><span>perguntas</span></div><div><b>${p.interrupts || 0}</b><span>cortes (estimativa)</span></div></div>
+      <div class="lab">Palavras mais usadas</div><div class="terms">${terms}</div></div>`;
+  }).join('');
+
+  $('#dist').innerHTML = cands.map(([n]) => {
+    const list = (D.distinct[n] || []).slice(0, 10);
+    return `<div class="box" style="--c:${col(n)}"><h2 style="font-size:15px;margin-bottom:6px;display:flex;gap:8px;align-items:center"><i style="width:10px;height:10px;border-radius:50%;background:var(--c)"></i>${esc(nm(n))}</h2><ul>${list.map(([w, a, b]) => `<li><span>${esc(w)}</span><small>${a}× · o outro: ${b}×</small></li>`).join('')}</ul></div>`;
+  }).join('');
+}
+$('#cards').addEventListener('click', (e) => { const b = e.target.closest('button.more'); if (!b) return; expanded.has(b.dataset.n) ? expanded.delete(b.dataset.n) : expanded.add(b.dataset.n); drawResumo(); });
+$('#tl').addEventListener('click', (e) => { const r = e.target.closest('rect.r'); if (r) goTo(+r.dataset.t); });
+
+/* ---------- assuntos ---------- */
+const openTh = new Set();
+function drawThemes() {
+  const P = D.people, F = (P['Flavio Bolsonaro'] || {}).themes || {}, L = (P.Lula || {}).themes || {}, TW = D.theme_words || {};
+  const names = [...new Set([...Object.keys(F), ...Object.keys(L)])].sort((a, b) => ((L[b] || 0) + (F[b] || 0)) - ((L[a] || 0) + (F[a] || 0)));
+  const max = Math.max(1, ...names.flatMap((n) => [L[n] || 0, F[n] || 0]));
+  $('#themes').innerHTML = names.map((n) => {
+    const info = TW[n], open = openTh.has(n);
+    let det = '';
+    if (info && open) {
+      det = `<div class="wd"><h4>Palavras ditas neste assunto <span style="text-transform:none;letter-spacing:0">(Lula · Flávio · mediadores)</span></h4>
+        <div class="wl">${info.found.map(([w, l, f, m]) => `<span>${esc(w)} <b class="l">${l}</b> · <b class="f">${f}</b> · <b class="m">${m}</b></span>`).join('') || '<span>nenhuma</span>'}</div>
+        ${info.unused.length ? `<h4>Também contam, mas ninguém disse</h4><div class="wl">${info.unused.map((w) => `<span class="off">${esc(w)}</span>`).join('')}</div>` : ''}
+        <p>Regra: "…" significa início de palavra (por exemplo, "empreg…" conta emprego, empregos, empregada). Radicais curtos, como "sus" ou "pib", só contam como palavra inteira. Os números ao lado de "Lula" e "Flávio" são exatamente os somados na barra acima; as falas dos mediadores não entram na barra.</p></div>`;
+    }
+    return `<div class="thw"><div class="th">
+      <div class="sd l" style="--c:var(--lula)"><span class="n">${L[n] || 0}</span><div class="bar"><b style="width:${((L[n] || 0) / max) * 100}%"></b></div></div>
+      <div class="nm"><span>${esc(n)}</span>${info ? `<button class="tgi" data-th="${esc(n)}" type="button" aria-expanded="${open}" title="Ver as palavras que contam para este assunto">${open ? 'palavras ▴' : 'palavras ▾'}</button>` : ''}</div>
+      <div class="sd" style="--c:var(--flavio)"><div class="bar"><b style="width:${((F[n] || 0) / max) * 100}%"></b></div><span class="n">${F[n] || 0}</span></div></div>
+      ${det}</div>`;
+  }).join('');
+}
+$('#themes').addEventListener('click', (e) => { const b = e.target.closest('button[data-th]'); if (!b) return; openTh.has(b.dataset.th) ? openTh.delete(b.dataset.th) : openTh.add(b.dataset.th); drawThemes(); });
+
+/* ---------- transcrição ---------- */
+function matches() {
+  const q = norm(filter.q.trim());
+  return D.lines.filter((l) => (!filter.w || l.who === filter.w) && (!q || norm(l.text).includes(q)));
+}
+function hl(text, q) {
+  if (!q) return esc(text);
+  const n = norm(text), k = norm(q); let out = '', i = 0, j;
+  if (n.length !== text.length) return esc(text);          // acentos decompostos mudam o tamanho: não destaca
+  while ((j = n.indexOf(k, i)) >= 0) { out += esc(text.slice(i, j)) + '<mark>' + esc(text.slice(j, j + k.length)) + '</mark>'; i = j + k.length; }
+  return out + esc(text.slice(i));
+}
+function drawLog(upTo) {
+  const list = matches(), q = filter.q.trim();
+  if (upTo) shown = Math.max(shown, upTo + 30);
+  $('#count').textContent = `${fmt(list.length)} ${list.length === 1 ? 'trecho' : 'trechos'}${q || filter.w ? ' encontrados' : ''}`;
+  $('#log').innerHTML = list.slice(0, shown).map((l) => {
+    const url = `${location.origin}${location.pathname}#t=${l.t}`, who = nm(l.who);
+    const tweet = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`“${l.text}” — ${who}, debate da Band`)}&url=${encodeURIComponent(url)}`;
+    return `<div class="ln" id="t${l.t}" data-t="${l.t}" style="--c:${col(l.who)}"><time>${mmss(l.t)}</time><b>${esc(who)}</b><span class="tx">${hl(l.text, q)}</span>
+      <span class="acts"><button type="button" data-copy="${esc(url)}" title="Copiar link desta fala">Link</button><a href="${tweet}" target="_blank" rel="noopener" title="Postar no X">X</a></span></div>`;
+  }).join('') || '<div class="empty">Nada encontrado.</div>';
+  $('#moreLines').hidden = list.length <= shown;
+}
+$('#q').addEventListener('input', (e) => { filter.q = e.target.value; shown = 80; drawLog(); });
+$('#who').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; filter.w = b.dataset.w; shown = 80; document.querySelectorAll('#who button').forEach((x) => x.classList.toggle('on', x === b)); drawLog(); });
+$('#moreLines').addEventListener('click', () => { shown += 120; drawLog(); });
+$('#log').addEventListener('click', async (e) => {
+  const b = e.target.closest('button[data-copy]'); if (!b) return;
+  try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = 'Copiado'; } catch (err) { b.textContent = 'Erro'; }
+  setTimeout(() => (b.textContent = 'Link'), 1500);
+});
+function goTo(t) {
+  tab('transcricao', false);
+  filter = { w: '', q: '' }; $('#q').value = ''; document.querySelectorAll('#who button').forEach((x, i) => x.classList.toggle('on', i === 0));
+  const idx = D.lines.findIndex((l) => l.t >= t);
+  shown = 80; drawLog(idx >= 0 ? idx : 0);
+  const line = D.lines[Math.max(idx, 0)];
+  const el = document.getElementById('t' + line.t);
+  if (el) { el.scrollIntoView({ block: 'center' }); el.classList.add('hit'); setTimeout(() => el.classList.remove('hit'), 3500); }
+  try { history.replaceState(null, '', location.pathname + '#t=' + line.t); } catch (e) { /* sem history */ }
+}
+
+/* ---------- checagem (só aparece se existir checagem.json) ---------- */
+const VD = { ok: ['Confere', 'ok'], ap: ['Aproximado', 'ap'], ct: ['Falta contexto', 'ct'], im: ['Exagerado ou impreciso', 'im'], fa: ['Falso', 'fa'], nc: ['Sem confirmação', 'nc'] };
+const VORDER = ['ok', 'ap', 'ct', 'im', 'fa', 'nc'];
+const ckf = { s: 'cron', w: '', v: '' };
+function ckList() {
+  let l = ck.items.filter((it) => (!ckf.w || it.who === ckf.w) && (!ckf.v || it.verdict === ckf.v));
+  const by = { cron: (a, b) => a.t - b.t, rec: (a, b) => b.t - a.t, ver: (a, b) => VORDER.indexOf(a.verdict) - VORDER.indexOf(b.verdict) || a.t - b.t, ass: (a, b) => (a.topic || '').localeCompare(b.topic || '', 'pt-BR') || a.t - b.t };
+  return l.sort(by[ckf.s]);
+}
+function drawCheck() {
+  if (!ck || !ck.items?.length) return;
+  $('#tabCk').hidden = false;
+  $('#methodBody').innerHTML = ck.method || '';
+  const counts = {}; ck.items.forEach((it) => { counts[it.verdict] = (counts[it.verdict] || 0) + 1; });
+  $('#ckVer').innerHTML = `<button class="${ckf.v ? '' : 'on'}" data-v="">Todos</button>` + VORDER.filter((v) => counts[v]).map((v) => `<button class="${ckf.v === v ? 'on' : ''}" data-v="${v}">${VD[v][0]} · ${counts[v]}</button>`).join('');
+  const list = ckList();
+  $('#ckCount').textContent = `${list.length} ${list.length === 1 ? 'afirmação' : 'afirmações'}`;
+  $('#ck').innerHTML = list.map((it) => {
+    const [label, cls] = VD[it.verdict] || VD.nc;
+    return `<div class="it" id="ck-${it.id || it.t}"><div class="tags"><span class="vd ${cls}" style="margin:0">${label}</span>${it.topic ? `<span class="tag">${esc(it.topic)}</span>` : ''}${it.confidence ? `<span class="tag">Confiança ${esc(it.confidence)}</span>` : ''}</div>
+      <div class="q">“${esc(it.quote)}”</div><div class="who">${esc(nm(it.who))} · <a href="#t=${it.t}" data-go="${it.t}">${mmss(it.t)} na transcrição</a></div>
+      <p>${esc(it.text)}</p>${it.data ? `<p style="margin-top:6px"><b>Dado:</b> ${esc(it.data)}</p>` : ''}
+      <div class="src">${(it.sources || []).map((s) => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>`).join('')}</div>
+      ${(it.cross || []).length ? `<div class="src" style="color:var(--muted)">Também checado por: ${it.cross.map((s) => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>`).join('')}</div>` : ''}</div>`;
+  }).join('') || '<div class="empty">Nenhuma afirmação com esses filtros.</div>';
+  $('#ckNote').textContent = ck.note || '';
+  document.querySelectorAll('#ckSort button').forEach((b) => b.classList.toggle('on', b.dataset.s === ckf.s));
+  document.querySelectorAll('#ckWho button').forEach((b) => b.classList.toggle('on', b.dataset.w === ckf.w));
+}
+$('#ckSort').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { ckf.s = b.dataset.s; drawCheck(); } });
+$('#ckWho').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { ckf.w = b.dataset.w; drawCheck(); } });
+$('#ckVer').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { ckf.v = b.dataset.v; drawCheck(); } });
+$('#ck').addEventListener('click', (e) => { const a = e.target.closest('a[data-go]'); if (a) { e.preventDefault(); goTo(+a.dataset.go); } });
+
+/* ---------- dados ---------- */
+async function load() {
   try {
     const r = await fetch(`${BASE}debate.json?t=${Math.floor(Date.now() / 15000)}`, { cache: 'no-store' });
-    const d = await r.json(); last = d; draw(d);
-  } catch (e) { /* sem dados ainda */ }
+    D = await r.json();
+  } catch (e) { $('#upd').textContent = 'Dados indisponíveis no momento.'; return; }
+  const pill = $('#pill'); pill.dataset.s = D.final ? 'done' : 'live'; pill.querySelector('span').textContent = D.final ? 'Encerrado' : 'Ao vivo';
+  $('#upd').textContent = `Transcrição automática, pode conter erros · atualizado ${new Date(D.updated * 1000).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' })} (Brasília)`;
+  drawResumo(); drawThemes(); drawLog();
+  try { const r = await fetch(`${BASE}checagem.json`, { cache: 'no-store' }); if (r.ok) { ck = await r.json(); drawCheck(); } } catch (e) { /* sem checagem publicada */ }
+  const h = location.hash;
+  if (h.startsWith('#t=')) goTo(+h.slice(3));
+  else if (['#temas', '#transcricao', '#checagem'].includes(h) && !(h === '#checagem' && $('#tabCk').hidden)) tab(h.slice(1), false);
 }
-function draw(d) {
-  {
-    const cands = Object.entries(d.people).filter(([n]) => /lula|flavio|flávio|bolsonaro/i.test(n));
-    document.getElementById('cards').innerHTML = cands.map(([n, p]) => {
-      const all = Object.entries(p.terms).sort((a, b) => b[1] - a[1]).slice(0, 30), open = expanded.has(n);
-      const terms = all.slice(0, open ? 30 : 10).map(([t, c]) => `<span>${esc(t)} <b>${c}</b></span>`).join('')
-        + (all.length > 10 ? `<button class="more" data-n="${esc(n)}" type="button">${open ? 'Ver menos' : 'Ver mais'}</button>` : '');
-      return `<div class="card" style="--c:${col(n)}"><h2><i></i>${esc(n)}</h2>
-        <div class="big">${p.words.toLocaleString('pt-BR')}<small>palavras</small></div>
-        <div class="stats"><div><b>${p.interrupts || 0}</b><span>cortes</span></div><div><b>${p.questions || 0}</b><span>perguntas</span></div></div>
-        <div class="terms">${terms}</div></div>`;
-    }).join('') || '';
-    const log = document.getElementById('log');
-    log.innerHTML = d.lines.slice(-120).reverse().map((l) => `<div class="ln" style="--c:${col(l.who)}"><time>${mmss(l.t)}</time><b>${esc(l.who)}</b><span>${esc(l.text)}</span></div>`).join('') || '<div class="empty">Aguardando o debate…</div>';
-    const pill = document.getElementById('pill'); pill.dataset.s = d.final ? 'done' : 'live'; pill.querySelector('span').textContent = d.final ? 'Encerrado' : 'Ao vivo';
-    document.getElementById('upd').textContent = `Transcrição automática (pode conter erros) · atualizado ${new Date(d.updated * 1000).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' }) + ' (Brasília)'}`;
-  }
-}
-document.getElementById('cards').addEventListener('click', (e) => {
-  const b = e.target.closest('button.more'); if (!b) return;
-  expanded.has(b.dataset.n) ? expanded.delete(b.dataset.n) : expanded.add(b.dataset.n);
-  if (last) draw(last);
-});
-pull(); setInterval(pull, 20000);
+load();
 })();
 </script>
 </body>

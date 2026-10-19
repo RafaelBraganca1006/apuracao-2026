@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0b0c">
 <title>Debate da Band · transcrição e números</title>
-<meta name="description" content="Transcrição do debate, tempo de fala e palavras mais usadas por Lula e Flávio Bolsonaro.">
+<meta name="description" content="Transcrição do debate e palavras mais usadas por Lula e Flávio Bolsonaro.">
 <meta property="og:title" content="Debate da Band · transcrição e números">
-<meta property="og:description" content="Transcrição, tempo de fala e palavras mais usadas por Lula e Flávio Bolsonaro.">
+<meta property="og:description" content="Transcrição e palavras mais usadas por Lula e Flávio Bolsonaro.">
 <meta property="og:image" content="https://apuracao-2026.brlabs.workers.dev/og.jpg?v=2">
 <meta name="twitter:card" content="summary_large_image">
 <script>try{var t=new URLSearchParams(location.search).get('theme')||localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}</script>
@@ -78,15 +78,12 @@ async function pull() {
 function draw(d) {
   {
     const cands = Object.entries(d.people).filter(([n]) => /lula|flavio|flávio|bolsonaro/i.test(n));
-    const total = cands.reduce((s, [, p]) => s + p.secs, 0) || 1;
     document.getElementById('cards').innerHTML = cands.map(([n, p]) => {
       const all = Object.entries(p.terms).sort((a, b) => b[1] - a[1]).slice(0, 30), open = expanded.has(n);
       const terms = all.slice(0, open ? 30 : 10).map(([t, c]) => `<span>${esc(t)} <b>${c}</b></span>`).join('')
         + (all.length > 10 ? `<button class="more" data-n="${esc(n)}" type="button">${open ? 'Ver menos' : 'Ver mais'}</button>` : '');
       return `<div class="card" style="--c:${col(n)}"><h2><i></i>${esc(n)}</h2>
-        <div class="big">${Math.floor(p.secs / 60)}<small>min ${Math.round(p.secs % 60)}s</small></div>
-        <div class="meta">${p.words.toLocaleString('pt-BR')} palavras · ${((p.secs / total) * 100).toFixed(0)}% do tempo dos candidatos</div>
-        <div class="bar"><b style="width:${(p.secs / total) * 100}%"></b></div>
+        <div class="big">${p.words.toLocaleString('pt-BR')}<small>palavras</small></div>
         <div class="stats"><div><b>${p.interrupts || 0}</b><span>cortes</span></div><div><b>${p.questions || 0}</b><span>perguntas</span></div></div>
         <div class="terms">${terms}</div></div>`;
     }).join('') || '';

@@ -1,0 +1,5 @@
+# Worker só de redirecionamento. Deve ser publicado numa SEGUNDA conta Cloudflare cujo subdomínio workers.dev seja "rbranganca",
+# para que apuracao-2026.rbranganca.workers.dev volte a abrir e leve ao site atual.
+name = "apuracao-2026"
+main = "index.js"
+compatibility_date = "2026-01-01"

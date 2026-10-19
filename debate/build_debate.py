@@ -52,7 +52,7 @@ def is_cand(who):
     return bool(CAND.search(norm(who)))
 
 
-def build(start):
+def build(start, final=False):
     path = os.path.join(OUT, "labeled.jsonl")
     if not os.path.exists(path):
         path = os.path.join(OUT, "segments.jsonl")
@@ -89,7 +89,7 @@ def build(start):
     for p in people.values():                          # top 30 palavras de cada um (a página mostra 10 e "ver mais") (forma mais usada de cada palavra)
         top = sorted(p.pop("_c").items(), key=lambda kv: -sum(kv[1].values()))[:30]
         p["terms"] = {max(forms, key=forms.get): sum(forms.values()) for _, forms in top}
-    return {"updated": int(time.time()), "people": people, "lines": lines[-400:], "total_lines": len(lines), "checkables": checks[-40:]}
+    return {"updated": int(time.time()), "people": people, "lines": lines[-400:], "total_lines": len(lines), "checkables": checks[-400:], "final": final}
 
 
 if __name__ == "__main__":
@@ -97,9 +97,10 @@ if __name__ == "__main__":
     ap.add_argument("--out", required=True)
     ap.add_argument("--loop", type=int, default=0)
     ap.add_argument("--start", type=float, default=0)
+    ap.add_argument("--final", action="store_true", help="marca o debate como encerrado")
     a = ap.parse_args()
     while True:
-        d = build(a.start)
+        d = build(a.start, a.final)
         tmp = a.out + ".tmp"
         with open(tmp, "w") as f:
             json.dump(d, f, ensure_ascii=False, separators=(",", ":"))

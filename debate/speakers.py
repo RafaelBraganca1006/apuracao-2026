@@ -80,6 +80,29 @@ def seed(pairs):
     json.dump({"centroids": cent, "labels": labels}, open(SPK, "w"))
 
 
+def refine(rounds=3):
+    """Refina as vozes com o debate inteiro: reclassifica, recalcula cada centroide só com os trechos mais seguros e repete."""
+    d = json.load(open(SPK))
+    segs, wav, enc = load_segments(), full_wav(), VoiceEncoder()
+    em = dict(embeds(segs, wav, enc))
+    keys = sorted(d["centroids"])
+    cent = {k: np.array(d["centroids"][k]) for k in keys}
+    unit = lambda v: v / np.linalg.norm(v)
+    for r in range(rounds):
+        sims = {i: np.array([float(unit(e) @ unit(cent[k])) for k in keys]) for i, e in em.items()}
+        groups = {k: [] for k in keys}
+        for i, sm in sims.items():
+            order = np.argsort(-sm)
+            margin = sm[order[0]] - sm[order[1]]
+            groups[keys[order[0]]].append((sm[order[0]] + margin, i))
+        for k in keys:
+            best = sorted(groups[k], reverse=True)[: max(20, int(len(groups[k]) * 0.6))]
+            cent[k] = np.mean([em[i] for _, i in best], axis=0)
+            print(f"rodada {r+1}: {d['labels'][k]} {len(groups[k])} trechos, {len(best)} usados")
+    d["centroids"] = {k: cent[k].tolist() for k in keys}
+    json.dump(d, open(SPK, "w"))
+
+
 def label(pairs):
     d = json.load(open(SPK))
     d["labels"] = {k: v for k, v in (p.split("=", 1) for p in pairs)}
@@ -117,6 +140,8 @@ if __name__ == "__main__":
     cmd = sys.argv[1]
     if cmd == "cluster":
         cluster(int(sys.argv[2]))
+    elif cmd == "refine":
+        refine()
     elif cmd == "seed":
         seed(sys.argv[2:])
     elif cmd == "label":

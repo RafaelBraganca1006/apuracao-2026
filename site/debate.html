@@ -89,6 +89,7 @@ function draw(d) {
     }).join('') || '';
     const log = document.getElementById('log');
     log.innerHTML = d.lines.slice(-120).reverse().map((l) => `<div class="ln" style="--c:${col(l.who)}"><time>${mmss(l.t)}</time><b>${esc(l.who)}</b><span>${esc(l.text)}</span></div>`).join('') || '<div class="empty">Aguardando o debate…</div>';
+    const pill = document.getElementById('pill'); pill.dataset.s = d.final ? 'done' : 'live'; pill.querySelector('span').textContent = d.final ? 'Encerrado' : 'Ao vivo';
     document.getElementById('upd').textContent = `Transcrição automática (pode conter erros) · atualizado ${new Date(d.updated * 1000).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' }) + ' (Brasília)'}`;
   }
 }

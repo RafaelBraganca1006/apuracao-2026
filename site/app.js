@@ -806,9 +806,9 @@ function renderExtCard(row, u) {
 
 function renderStates() {
   const list = $('#ufList');
-  const r1v = mapView() === 'r1';
+  const r1v = S.view.data === 'r1';              // a lista segue o turno escolhido (o mapa é que usa o 1º turno de fundo)
   const live = status() !== 'waiting';
-  if (!r1v && !live) { list.innerHTML = '<li class="empty">Aguardando a apuração</li>'; list._rows = null; $('#extBtn').hidden = true; return; }
+  if (!r1v && !live) { list.innerHTML = '<li class="empty">Aguardando as primeiras urnas</li>'; list._rows = null; $('#extBtn').hidden = true; return; }
   list.querySelector('.empty')?.remove();
   const U = (r1v ? S.agg1 : S.agg2).U;
   let arr = Object.entries(U).filter(([, u]) => u.l + u.f > 0).map(([sg, u]) => {
@@ -878,7 +878,7 @@ function closeState() { S.uf = null; syncSide(); renderStates(); refit(true); }
 function renderDetail() {
   const sg = S.uf, box = $('#detail');
   if (!sg) return;
-  const d = mapView(), r1v = d === 'r1', ext = sg === 'ZZ';   // antes da apuração do 2º turno o detalhe mostra o 1º turno (igual ao mapa)
+  const d = S.view.data, r1v = d === 'r1', ext = sg === 'ZZ';   // antes da apuração do 2º turno o detalhe mostra o 1º turno (igual ao mapa)
   const u1 = (r1v ? S.agg1 : S.agg1f).U[sg], u2 = S.agg2?.U[sg], u = r1v ? u1 : u2;
   const rows1 = (r1v ? S.r1 : S.r1f).rows, rows2 = S.r2?.rows;
   const ids = S.byUf[sg] || [];

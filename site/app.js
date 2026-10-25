@@ -729,7 +729,7 @@ function renderScore() {
   } else {
     $('#pill').dataset.s = st;
     $('#pill span').textContent = st === 'replay' ? `Replay · ${tFmt(S.at)}` : PILL[st];
-    $('#eyebrow').textContent = 'Presidente · 2º turno';
+    $('#eyebrow').textContent = 'Tracker da votação · 2º turno';
   }
 
   const pL = !empty && T.val ? T.l / T.val : 0, pF = !empty && T.val ? T.f / T.val : 0;
@@ -745,7 +745,7 @@ function renderScore() {
   const diff = T.l - T.f, lead = $('#lead');
   const pts = Math.abs(pL - pF) * 100;
   lead.className = 'lead ' + (empty ? '' : diff > 0 ? 'l' : diff < 0 ? 'f' : '');
-  lead.textContent = empty ? 'Aguardando o início da apuração' : diff === 0 ? 'Empate' : `${diff > 0 ? 'Lula' : 'Flávio'} à frente por ${fmtInt(Math.abs(diff))} votos (${pts.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} pts)`;
+  lead.textContent = empty ? 'Aguardando as primeiras urnas' : diff === 0 ? 'Empate' : `${diff > 0 ? 'Lula' : 'Flávio'} à frente por ${fmtInt(Math.abs(diff))} votos (${pts.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} pts)`;
 
   const apPct = T.sec && !empty ? T.ap / T.sec : 0;
   $('#progBar').style.width = apPct * 100 + '%';
@@ -1100,7 +1100,7 @@ $('#liveBack').addEventListener('click', async () => { stopPlay(); if (S.at1 != 
 const R1_DATE = '2026-10-04';
 const VOTE_START = Date.UTC(2026, 9, 25, 11, 0, 0), VOTE_END = Date.UTC(2026, 9, 25, 20, 0, 0);   // 8h e 17h de Brasília
 const mapView = () => (S.view.data !== 'r1' && status() === 'waiting' ? 'r1' : S.view.data);
-const pollMode = () => S.view.data !== 'r1' && status() === 'waiting';
+const pollMode = () => false;                    // sem tela "em breve": o placar aparece sempre, vazio até o TSE publicar votos
 
 function updateCountdown() {
   const el = $('#soonCount span'); if (!el) return;
